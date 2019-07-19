@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Otokatari 音·语
+    </title>
+    <style>
+        .li{
+            width:90%;
+            margin:0 auto;
+        }
+        #topper{
+            width:90%;
+            margin:0 auto;
+        }
+        .songlist_header_album,
+        .songlist_header_author,
+        .songlist_header_name,
+        .songlist_header_time{
+            display:inline-block;
+        }
+        .songlist_header,.songlist_items_total{
+            padding-left:20px;
+            padding-right: 120px;
+        }
+        .songlist_header{
+            height:55px;
+            line-height:55px;
+            color:#999;
+            background-color: rgba(0,0,0,0.03);
+        }
+        .songlist_header_name,.song_name{
+            float:left;
+            width:50%;
+            position:relative;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_album,.songlist_header_author,.album_name,.artist_name{
+            float:left;
+            width:20%;
+            box-sizing: border-box;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_time{
+            float:right;
+            width:10%;
+        }
+        .songlist_items{
+            list-style: none;
+        }
+        #key{
+            display:inline-block;
+            float:right;
+        }
+        .font{
+            display: inline-block;
+            margin-left:8%;
+            float:left;
+        }
+        .imageicon{
+            display:inline-block;
+            float:left;
+            margin-left:25%;
+        }
+        .input-group{
+            display: inline-block;
+        }
+        #input_and_btn{
+            display:inline-block;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<br/>
+
+<div>
+    <div class="font">
+        <p style="font-size: 40px;font-family: 'Calisto MT';color:lightskyblue;">Otokatari 音·语</p>
+    </div>
+
+    <div class="imageicon">
+        <img src="image/Otokatari-Icon.png">
+    </div>
+
+    <div class="input-group">
+    <span id="input_and_btn">
+        <input id="key" name="key" type="text" class="form-control">
+        <button onclick="show()" class="btn btn-success" type="button">Search</button>
+    </span>
+    </div>
+
+</div>
+<hr/>
+
+<div id="topper">
+    <ul class="songlist_header">
+        <li class="songlist_header_name">歌曲</li>
+        <li class="songlist_header_author">歌手</li>
+        <li class="songlist_header_album">专辑</li>
+        <li class="songlist_header_time">时长</li>
+    </ul>
+</div>
+
+<div class="li">
+</div>
+
+<script type="text/javascript">
+
+    function show() {
+        var urlextra=$('#key').val();
+        $.ajax({
+            type: 'get',
+            url: 'http://110.64.88.125:9980/kugou/search?keywords='+encodeURIComponent(urlextra), //请求数据的地址
+            async:false,
+            success: function(data) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+                console.log(data);
+                var json = data.data.lists;
+                var data = ''
+                $.each(json, function (index) {
+                    var songname = json[index].SongName;
+                    var artistname=json[index].SingerName;
+                    var grp=json[index].Grp;
+                    $.each(grp,function(index2){
+                        var album_name=grp[index2].AlbumName;
+                        data +='<ul class="songlist_items_total">'+
+                            ' <div class="info">' +
+                            ' <div class="order">' +
+                            '<li class="songlist_items">'+
+                            '<span id="song_name" class="song_name"> '+'<a id="name" href="audio.html"> '+ songname +'</a> '+ '</span>' +
+                            '<span class="artist_name"> ' + artistname + '</span>' +
+                            '<span id="album_name" class="album_name"> '+album_name+'</span>'+
+                            '</li>'+
+                            '</div>' +
+                            '</div>'+'</ul>';
+                    })
+                })
+                $('.li').html(data);
+            },
+            error: function () {
+                //请求失败时执行该函数
+                alert("发生错误!");
+            }
+        })
+    }
+</script>
+</body>
+
+</html>
