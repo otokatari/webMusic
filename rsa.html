@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>RSA Encryptor DEMO</title>
+        <script lang="javascript" type="text/javascript" src="./rsa/jsrsasign-all-min.js"></script>
+        <script lang="javascript" type="text/javascript" src="./rsa/keyutil-1.0.js"></script>
+        <script lang="javascript" type="text/javascript" src="./rsa/jsencrypt.min.js"></script>
+        <script>
+            function DoEncrypt(){
+                let pubKey = document.getElementById("PublicKey").value;
+                let message = document.getElementById("Message").value;
+                let pkcs8Key = KEYUTIL.getKey(pubKey);
+                let encryptor = new JSEncrypt();
+                encryptor.setPublicKey(pkcs8Key);
+                let encrypted = encryptor.encrypt(message);
+                let p = document.createElement("p");
+                p.innerText = encrypted;
+                document.body.appendChild(p);
+            }
+        </script>
+    </head>
+    <textarea id="PublicKey"></textarea>
+    <input id="Message" placeholder="Message here!"/>
+    <button onclick="DoEncrypt()">加密</button>
+</html>
