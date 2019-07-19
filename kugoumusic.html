@@ -16,8 +16,8 @@
         }
         .songlist_header_album,
         .songlist_header_author,
-        .songlist_header_name,
-        .songlist_header_time{
+        .songlist_header_name
+       {
             display:inline-block;
         }
         .songlist_header,.songlist_items_total{
@@ -32,7 +32,7 @@
         }
         .songlist_header_name,.song_name{
             float:left;
-            width:50%;
+            width:40%;
             position:relative;
             white-space:nowrap;
             overflow:hidden;
@@ -40,15 +40,16 @@
         }
         .songlist_header_album,.songlist_header_author,.album_name,.artist_name{
             float:left;
-            width:20%;
             box-sizing: border-box;
             white-space:nowrap;
             overflow:hidden;
             text-overflow:ellipsis;
         }
-        .songlist_header_time{
-            float:right;
-            width:10%;
+        .songlist_header_album,.album_name{
+            width:40%;
+        }
+        .songlist_header_author,.artist_name{
+            width:20%;
         }
         .songlist_items{
             list-style: none;
@@ -106,7 +107,6 @@
         <li class="songlist_header_name">歌曲</li>
         <li class="songlist_header_author">歌手</li>
         <li class="songlist_header_album">专辑</li>
-        <li class="songlist_header_time">时长</li>
     </ul>
 </div>
 
@@ -116,40 +116,49 @@
 <script type="text/javascript">
 
     function show() {
-        var urlextra=$('#key').val();
+        var urlextra = $('#key').val();
         $.ajax({
             type: 'get',
-            url: 'http://110.64.88.125:9980/kugou/search?keywords='+encodeURIComponent(urlextra), //请求数据的地址
-            async:false,
-            success: function(data) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+            url: ' http://129.204.223.158/kugou/search?keywords=' + encodeURIComponent(urlextra), //请求数据的地址
+            async: false,
+            success: function (data) { //请求成功时执行该函数内容，data即为服务器返回的json对象
                 console.log(data);
                 var json = data.data.lists;
                 var data = ''
                 $.each(json, function (index) {
                     var songname = json[index].SongName;
-                    var artistname=json[index].SingerName;
-                    var grp=json[index].Grp;
-                    $.each(grp,function(index2){
-                        var album_name=grp[index2].AlbumName;
-                        data +='<ul class="songlist_items_total">'+
-                            ' <div class="info">' +
-                            ' <div class="order">' +
-                            '<li class="songlist_items">'+
-                            '<span id="song_name" class="song_name"> '+'<a id="name" href="audio.html"> '+ songname +'</a> '+ '</span>' +
-                            '<span class="artist_name"> ' + artistname + '</span>' +
-                            '<span id="album_name" class="album_name"> '+album_name+'</span>'+
-                            '</li>'+
-                            '</div>' +
-                            '</div>'+'</ul>';
-                    })
-                })
-                $('.li').html(data);
-            },
-            error: function () {
-                //请求失败时执行该函数
-                alert("发生错误!");
-            }
+                    var artistname = json[index].SingerName;
+                    var grp = json[index].Grp;
+                    $.each(grp, function (index2) {
+                        var album_name = grp[index2].AlbumName;
+                        var filehash = grp[index2].FileHash;
+                        console.log(filehash);
+                        $.ajax({
+                            type: 'get',
+                            url: 'http://129.204.223.158/kugou/songurl?hash=' + filehash,
+                            async: false,
+                            success: function (data2) {
+                                    var music_url = data2.data.timelength;
+                                    console.log(music_url);
+
+                                data += '<ul class="songlist_items_total">' +
+                                    ' <div class="info">' +
+                                    ' <div class="order">' +
+                                    '<li class="songlist_items">' +
+                                    '<span id="song_name" class="song_name"> ' + '<a id="name" href="audio.html"> ' + songname + '</a> ' + '</span>' +
+                                    '<span>' + music_url + '</span>' +
+                                    '<span class="artist_name"> ' + artistname + '</span>' +
+                                    '<span id="album_name" class="album_name"> ' + album_name + '</span>' +
+                                    '</li>' +
+                                    '</div>' +
+                                    '</div>' + '</ul>';
+                        }
         })
+    })
+    })
+                $('.li').html(data);
+    }
+    })
     }
 </script>
 </body>
