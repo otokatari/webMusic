@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/hmac-sha256.js"></script>
+    <script src="js/crypto-js.js"></script>
+    <script lang="javascript" type="text/javascript" src="./rsa/jsrsasign-all-min.js"></script>
+    <script lang="javascript" type="text/javascript" src="./rsa/keyutil-1.0.js"></script>
+    <script lang="javascript" type="text/javascript" src="./rsa/jsencrypt.min.js"></script>
+</head>
+
+<body>
+    <form id="form" name="form">
+        <input id="phone_number">手机号
+        <input id="pwd">密码
+        <button onclick="phone_login()">注册</button>
+    </form>
+
+<script>
+    var phone_number=$('#phone_number').val().toString();
+    var pwd=$('#pwd').val().toString()
+    var pubKey=
+        "-----BEGIN PUBLIC KEY-----"+
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgXpwLlSIE5Y5E3YIe5puli8JFjLlx1YAS7RArHCdLW5z8uebpjLtcC8z8oOeXBq8flPeLaCO94tAtfSpd4vrg090H5RS6t3VNbUNIioJclNXDgdRP6axOcvI4jiGot/lhUwq7wlokG7vTpCaee5YV9cX847uIOTa89k/aN4VU8epFzbEyuMiCPcmJdn88RmEwNUCd79SfX8/Ew1IbscZ5B3hNMUWGrC5t4SCjpNBrV0UplZ3eJNCIhwa0cpYHPo4OyfagtBCN45BIPvxv92QDcd6F9xZvwsRFNTJ7ptS4ynxK+QVQYpRikF7vX0SujuvrmKV2Wy8USWzCPoOr+OJwwIDAQAB"+
+        "-----END PUBLIC KEY-----";
+
+    var hash = CryptoJS.HmacSHA256(pubKey, pwd);
+    var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+
+    let pkcs8Key = KEYUTIL.getKey(pubKey);
+
+    let encryptor = new JSEncrypt();
+
+    encryptor.setPublicKey(pkcs8Key);
+
+    let encrypted = encryptor.encrypt(hashInBase64);
+
+    var encrypted2=encrypted.toString();
+
+    function phone_login(){
+        $.ajax({
+            type:'post',
+            url:'http://129.204.223.158/backend/user/auth/register',
+            dataType:"json",
+            ContentType:'application/json',
+            data: {
+                "identifier":phone_number,
+                "credentials":encrypted2,
+                "type":0,
+            },
+                success:function(data)
+                {
+                    console.log(data.StatusCode);
+                },
+                error:function()
+                {
+                    alert("error");
+                }
+        })
+    }
+</script>
+</body>
+</html>
