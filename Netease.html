@@ -231,17 +231,17 @@
         console.log(value);
         $.ajax({
             type:'POST',
-            url:'http://129.204.223.158/music/playlist/createlist',
+            url:'http://129.204.223.158/backend/music/playlist/createlist',
             contentType:"application/json",
-            datatype:'json',
+            dataType:'json',
             data:JSON.stringify({
                 Favourite:false,
                 Name:"123",
             }),
             crossDomain:true,
-            beforeSend : function(request) {
-                request.setRequestHeader("Authorization",value);
-            },//JWT请求头
+            headers:{
+                Authorization: value
+            },
             success:function(data)
             {
                 console.log(data);
