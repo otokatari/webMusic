@@ -83,9 +83,10 @@
 <br/>
 
 <div>
-    <div class="font">
+
+<div class="font">
         <p style="font-size: 40px;font-family: 'Calisto MT';color:lightskyblue;">Otokatari 音·语</p>
-    </div>
+</div>
 
 <div class="imageicon">
         <img src="image/Otokatari-Icon.png">
@@ -98,6 +99,17 @@
     </span>
 </div>
 
+    <div class="login">
+        <a href="login.html">登录</a>
+    </div>
+
+    <div class="logout">
+        <a onclick="logOut()">注销登录</a>
+    </div>
+
+    <button onclick="getProfileImage()">获取头像</button>
+
+    <a onclick="createSongList()">创建播放列表</a>
 </div>
 <hr/>
 
@@ -154,15 +166,87 @@
                                         '</div>' +
                                         '</div>' + '</ul>';
                                 })
-
                             })
-
                             $('.li').html(data);
                         },
                     })
                 })
             }
     })
+    }
+
+    function getProfileImage(){
+        var userID=window.localStorage.getItem("IDkey");
+        var value="Bearer "+window.localStorage.getItem("Tokenkey");
+        $.ajax({
+            type:'get',
+            url:'http://129.204.223.158/backend/user/profile/getprofile?userid='+userID,
+            async:false,
+            beforeSend : function(request) {
+                request.setRequestHeader("Authorization",value);
+            },//JWT请求头
+            success:function(data)
+            {
+                console.log(data);
+                var avatar=data.Avatar;
+                if(avatar!=null)
+                {
+                    $.ajax({
+                        type:'get',
+                        url:'http://129.204.223.158/user/profile/getavatar?avatar='+avatar,
+                        async:false,
+                        success:function(data)
+                        {
+                            //打开一个Content-Type为image/jpg或者image/png的Stream. 客户端请连接上这个Stream, 然后将这个Stream中的data搬到buffer或者本地文件中就可以了。
+                        }
+                    })
+                }
+            },
+            error:function(data)
+            {
+                alert("error");
+            }
+        })
+    }
+
+    function logOut(){
+        var value="Bearer "+window.localStorage.getItem("Tokenkey");
+        $.ajax({
+            type:'get',
+            url: 'http://129.204.223.158/backend/user/auth/logout',
+            async:false,
+            beforeSend : function(request) {
+                request.setRequestHeader("Authorization",value);
+            },//JWT请求头
+            success:function(data)
+            {
+                console.log(data);
+                window.location.href="login.html";//页面跳转
+            }
+        })
+    }
+
+    function createSongList(){
+        var value="Bearer "+window.localStorage.getItem("Tokenkey");
+        console.log(value);
+        $.ajax({
+            type:'POST',
+            url:'http://129.204.223.158/music/playlist/createlist',
+            contentType:"application/json",
+            datatype:'json',
+            data:JSON.stringify({
+                Favourite:false,
+                Name:"123",
+            }),
+            crossDomain:true,
+            beforeSend : function(request) {
+                request.setRequestHeader("Authorization",value);
+            },//JWT请求头
+            success:function(data)
+            {
+                console.log(data);
+            }
+        })
     }
 </script>
 </body>

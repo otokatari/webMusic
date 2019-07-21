@@ -6,63 +6,119 @@
     <title>Title</title>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-    <script type="text/javascript"
-        src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script lang="javascript" type="text/javascript" src="./rsa/jsrsasign-all-min.js"></script>
     <script lang="javascript" type="text/javascript" src="./rsa/keyutil-1.0.js"></script>
     <script lang="javascript" type="text/javascript" src="./rsa/jsencrypt.min.js"></script>
 </head>
 
 <body>
-    <form id="form" name="form">
-        <input id="phone_number">手机号
-        <input id="pwd">密码
-    </form>
-    <button onclick="phone_login()">注册</button>
-    <script>
-        function phone_login() {
 
-            var phone_number = $('#phone_number').val();
-            var pwd = $('#pwd').val();
-            var pubKey =
-                "-----BEGIN PUBLIC KEY-----" +
-                "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgXpwLlSIE5Y5E3YIe5puli8JFjLlx1YAS7RArHCdLW5z8uebpjLtcC8z8oOeXBq8flPeLaCO94tAtfSpd4vrg090H5RS6t3VNbUNIioJclNXDgdRP6axOcvI4jiGot/lhUwq7wlokG7vTpCaee5YV9cX847uIOTa89k/aN4VU8epFzbEyuMiCPcmJdn88RmEwNUCd79SfX8/Ew1IbscZ5B3hNMUWGrC5t4SCjpNBrV0UplZ3eJNCIhwa0cpYHPo4OyfagtBCN45BIPvxv92QDcd6F9xZvwsRFNTJ7ptS4ynxK+QVQYpRikF7vX0SujuvrmKV2Wy8USWzCPoOr+OJwwIDAQAB" +
-                "-----END PUBLIC KEY-----";
+<form id="form" name="form">
+    <p>手机号</p>
+    <br/>
+    <input id="phone_number"  class="form-control">
+    <p>密码</p>
+    <br/>
+    <input type="password" id="pwd" class="form-control">
+</form>
 
-            var hash = CryptoJS.HmacSHA256(pubKey, pwd);
-            var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+<button onclick="phone_register()" class="btn btn-primary">注册</button>
+<button onclick="phone_login()" class="btn btn-primary">登录</button>
 
-            let pkcs8Key = KEYUTIL.getKey(pubKey);
+<script>
+    function phone_register() {
+        var phone_number = $('#phone_number').val();
+        var pwd = $('#pwd').val();
+        var pubKey =
+            "-----BEGIN PUBLIC KEY-----" +
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgXpwLlSIE5Y5E3YIe5puli8JFjLlx1YAS7RArHCdLW5z8uebpjLtcC8z8oOeXBq8flPeLaCO94tAtfSpd4vrg090H5RS6t3VNbUNIioJclNXDgdRP6axOcvI4jiGot/lhUwq7wlokG7vTpCaee5YV9cX847uIOTa89k/aN4VU8epFzbEyuMiCPcmJdn88RmEwNUCd79SfX8/Ew1IbscZ5B3hNMUWGrC5t4SCjpNBrV0UplZ3eJNCIhwa0cpYHPo4OyfagtBCN45BIPvxv92QDcd6F9xZvwsRFNTJ7ptS4ynxK+QVQYpRikF7vX0SujuvrmKV2Wy8USWzCPoOr+OJwwIDAQAB" +
+            "-----END PUBLIC KEY-----";
+        var hash = CryptoJS.HmacSHA256(pubKey, pwd);
+        var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
 
-            let encryptor = new JSEncrypt();
+        let pkcs8Key = KEYUTIL.getKey(pubKey);
+        let encryptor = new JSEncrypt();
+        encryptor.setPublicKey(pkcs8Key);
+        let encrypted = encryptor.encrypt(hashInBase64);
+        var encrypted2 = encrypted.toString();
+        console.log(phone_number,encrypted2);
 
-            encryptor.setPublicKey(pkcs8Key);
-
-            let encrypted = encryptor.encrypt(hashInBase64);
-
-            var encrypted2 = encrypted.toString();
-
-            console.log(phone_number,encrypted2);
-
-            $.ajax({
-                type: 'POST',
-                url: 'http://129.204.223.158/backend/user/auth/register',
-                dataType: 'json',
-                contentType:'application/json',
-                data: JSON.stringify({
-                    "identifier": phone_number,
-                    "credentials": encrypted2,
-                    "type": 0,
-                }),
-                success: function (data) {
-                    console.log(data.StatusCode);
-                },
-                error: function () {
+        $.ajax({
+            type: 'POST',
+            url: 'http://129.204.223.158/backend/user/auth/register',
+            dataType: 'json',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "identifier": phone_number,
+                "credentials": encrypted2,
+                "type": 0,
+            }),
+            success: function (data) {
+                console.log(data);
+                if(data.StatusCode===-1)
+                {
+                    alert("此手机号已被注册。");
+                }
+                else if(data.StatusCode===0)
+                {
+                    alert("您已成功注册！");
+                }
+                else
+                {
                     alert("error");
                 }
-            })
-        }
-    </script>
-</body>
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
 
+    function phone_login(){
+        var phone_number = $('#phone_number').val();
+        var pwd = $('#pwd').val();
+        var pubKey =
+            "-----BEGIN PUBLIC KEY-----" +
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgXpwLlSIE5Y5E3YIe5puli8JFjLlx1YAS7RArHCdLW5z8uebpjLtcC8z8oOeXBq8flPeLaCO94tAtfSpd4vrg090H5RS6t3VNbUNIioJclNXDgdRP6axOcvI4jiGot/lhUwq7wlokG7vTpCaee5YV9cX847uIOTa89k/aN4VU8epFzbEyuMiCPcmJdn88RmEwNUCd79SfX8/Ew1IbscZ5B3hNMUWGrC5t4SCjpNBrV0UplZ3eJNCIhwa0cpYHPo4OyfagtBCN45BIPvxv92QDcd6F9xZvwsRFNTJ7ptS4ynxK+QVQYpRikF7vX0SujuvrmKV2Wy8USWzCPoOr+OJwwIDAQAB" +
+            "-----END PUBLIC KEY-----";
+        var hash = CryptoJS.HmacSHA256(pubKey, pwd);
+        var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+
+        let pkcs8Key = KEYUTIL.getKey(pubKey);
+        let encryptor = new JSEncrypt();
+        encryptor.setPublicKey(pkcs8Key);
+        let encrypted = encryptor.encrypt(hashInBase64);
+        var encrypted2 = encrypted.toString();
+        console.log(phone_number,encrypted2);
+
+        $.ajax({
+            type: 'POST',
+            url: 'http://129.204.223.158/backend/user/auth/login',
+            dataType: 'json',
+            contentType:'application/json',
+            data: JSON.stringify({
+                "identifier": phone_number,
+                "credentials": encrypted2,
+                "type": 0,
+            }),
+            success: function (data) {
+                console.log(data);
+                if(data.StatusCode===0)
+                {
+                    let userID=data.UserID;
+                    window.localStorage.setItem("IDkey",userID);
+                    let accesstoken=data.AccessToken;
+                    window.localStorage.setItem("Tokenkey",accesstoken);
+                    window.location.href="Netease.html";//以网易云音乐为例
+                }
+                else if(data.StatusCode===-1)
+                {
+                    alert("用户名或密码错误！");
+                }
+            },
+        })
+    }
+</script>
+</body>
 </html>
