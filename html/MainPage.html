@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Otokatari 音·语
+    </title>
+    <style type="text/css">
+        .li{
+            width:90%;
+            margin:0 auto;
+        }
+        #topper{
+            width:90%;
+            margin:0 auto;
+        }
+        .songlist_header_album,
+        .songlist_header_author,
+        .songlist_header_name{
+            display:inline-block;
+        }
+        .songlist_header,.songlist_items_total{
+            padding-left:20px;
+            padding-right: 120px;
+        }
+        .songlist_header{
+            height:55px;
+            line-height:55px;
+            color:#999;
+            background-color: rgba(0,0,0,0.03);
+        }
+        .songlist_header_name,.song_name{
+            float:left;
+            width:35%;
+            position:relative;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_album,.songlist_header_author,.album_name,.artist_name,.platform,.platform_name{
+            float:left;
+            box-sizing: border-box;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_album,.album_name{
+            width:40%;
+        }
+        .songlist_header_author,.artist_name{
+            width:15%;
+        }
+        .platform,.platform_name{
+            width:10%;
+        }
+        .songlist_items{
+            list-style: none;
+        }
+        #key{
+            display:inline-block;
+
+            width:30%;
+        }
+        .font{
+            display: inline-block;
+            float:left;
+        }
+        .imageicon{
+            display:inline-block;
+            float:left;
+        }
+        .input-group{
+            display: inline-block;
+            float:right;
+        }
+        #input_and_btn{
+            display:inline-block;
+        }
+        .items{
+            display: inline-block;
+            margin-left:5%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<br/>
+
+<div>
+    <div class="imageicon">
+        <img src="../image/Otokatari-Icon.png">
+    </div>
+
+    <div class="font">
+        <p style="font-size: 40px;font-family: 'Calisto MT';color:lightskyblue;">Otokatari 音·语</p>
+    </div>
+
+    <div class="input-group">
+    <span id="input_and_btn">
+        <input id="key" name="key" type="text" class="form-control" placeholder="搜索">
+        &nbsp;&nbsp;
+        <button onclick="Kugoushow()" class="btn btn-success" type="button">KugouSearch</button>
+        <button onclick="Neteaseshow()" class="btn btn-success" type="button">NeteaseSearch</button>
+        <button onclick="QQmusicshow()" class="btn btn-success" type="button">QQmusicSearch</button>
+    </span>
+    </div>
+
+    <div class="item">
+        <ul>
+            <li class="items"><a href="login.html" style="text-decoration: none;color:black;font-size:30px;">登录</a></li>
+            <li class="items"><a onclick="logOut()" style="text-decoration: none;color:black;font-size:30px;">注销登录</a></li>
+            <li class="items"><a href="MyMusic.html" style="text-decoration: none;color:black;font-size:30px;">我的音乐</a></li>
+        </ul>
+</div>
+
+</div>
+<hr/>
+
+<div id="topper">
+    <ul class="songlist_header">
+        <li class="songlist_header_name">歌曲</li>
+        <li class="songlist_header_author">歌手</li>
+        <li class="songlist_header_album">专辑</li>
+        <li class="platform">平台</li>
+    </ul>
+</div>
+
+<div class="li">
+</div>
+
+<script type="text/javascript">
+
+    function Neteaseshow() {
+        var urlextra = $('#key').val();
+        $.ajax({
+            type: 'get',
+            url: 'http://129.204.223.158/netease/search?keywords=' + encodeURIComponent(urlextra), //请求数据的地址
+            async: false,
+            success: function (data1) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+                var json = data1.result.songs;
+                var data = ''
+                $.each(json, function (index) {
+                    var songname = json[index].name;
+                    var ID = json[index].id;
+                    var artists = json[index].artists;
+                    var album_name = json[index].album.name;
+                    $.ajax({
+                        type: 'get',
+                        async: false,
+                        url: 'http://129.204.223.158/netease/song/url?id=' + encodeURIComponent(ID),
+                        success: function (data2) {
+                            var json2 = data2.data;
+                            $.each(json2, function (index) {
+                                var music_url = json2[index].url;
+                                $.each(artists, function (index2) {
+                                    var artist_name = artists[index2].name;
+                                    data += '<ul class="songlist_items_total">' +
+                                        ' <div class="info">' +
+                                        ' <div class="order">' +
+                                        '<li class="songlist_items">' +
+                                        '<span id="song_name" class="song_name"> ' + '<a id="name" href="#" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
+                                        '<span class="artist_name"> ' + artist_name + '</span>' +
+                                        '<span id="album_name" class="album_name"> ' + album_name + '</span>' +
+                                        '<span id="platform_name" class="platform_name">' + '网易云音乐' + '</span>' +
+                                        '</li>' +
+                                        '<br/>'+
+                                        '</div>' +
+                                        '</div>' + '</ul>';
+                                })
+                            })
+                            $('.li').html(data);
+                        },
+                    })
+                })
+            }
+        })
+    }
+
+    function QQmusicshow() {
+        var urlextra = $('#key').val();
+        $.ajax({
+            type: 'get',
+            url: 'http://129.204.223.158/qqmusic/search?query=' + encodeURIComponent(urlextra) + '&page=1&zhida=false&perpage=20', //请求数据的地址
+            async: false,
+            success: function (data1) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+                var json = data1.data.song.list;
+                var data = ''
+                $.each(json, function (index) {
+                    var album_name = json[index].albumname
+                    var songname = json[index].songname;
+                    var artists = json[index].singer;
+                    var songmid = json[index].songmid;
+                    $.ajax({
+                        type: 'get',
+                        url: 'http://129.204.223.158/qqmusic/song/vkey?songmid=' + songmid,
+                        async: false,
+                        success: function (data2) {
+                            var json2 = data2.data.items;
+                            $.each(json2, function (index) {
+                                var vkey = json2[index].vkey;
+                                $.ajax({
+                                    type: 'get',
+                                    url: 'http://isure.stream.qqmusic.qq.com/C400' + encodeURIComponent(songmid) + '.m4a?guid=5448538077&vkey=' + vkey + '&uin=0&fromtag=66',
+                                    async: false,
+                                })
+                            })
+                        }
+                    })
+                    $.each(artists, function (index2) {
+                        var artist_name = artists[index2].name;
+                        data += '<ul class="songlist_items_total">' +
+                            ' <div class="info">' +
+                            ' <div class="order">' +
+                            '<li class="songlist_items">' +
+                            '<span id="song_name" class="song_name"> ' + '<a id="name" href="audio.html" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
+                            '<span class="artist_name"> ' + artist_name + '</span>' +
+                            '<span id="album_name" class="album_name"> ' + album_name + '</span>' +
+                            '<span id="platform_name" class="platform_name">' + 'QQ音乐' + '</span>' +
+                            '</li>' +
+                            '<br/>'+
+                            '</div>' +
+                            '</div>' + '</ul>';
+                    })
+                })
+                $('.li').html(data);//页面显示数据
+            },
+        })
+    }
+
+    function Kugoushow()
+    {
+        var urlextra = $('#key').val();
+        $.ajax({
+            type: 'get',
+            url: ' http://129.204.223.158/kugou/search?keywords=' + encodeURIComponent(urlextra), //请求数据的地址
+            async: false,
+            success: function (data1) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+                var json = data1.data.lists;
+                var data = ''
+                $.each(json, function (index) {
+                    var songname = json[index].SongName;
+                    var artistname = json[index].SingerName;
+                    var grp = json[index].Grp;
+                    $.each(grp, function (index2) {
+                        var album_name = grp[index2].AlbumName;
+                        var filehash = grp[index2].FileHash;
+                        $.ajax({
+                            type: 'get',
+                            url: 'http://129.204.223.158/kugou/songurl?hash=' + filehash,
+                            async: false,
+                            success: function (data2) {
+                                var music_url = data2.data.timelength;//mistake!!!!!
+                                data += '<ul class="songlist_items_total">' +
+                                    ' <div class="info">' +
+                                    ' <div class="order">' +
+                                    '<li class="songlist_items">' +
+                                    '<span id="song_name" class="song_name"> ' + '<a id="name" href="audio.html" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
+                                    '<span class="artist_name"> ' + artistname + '</span>' +
+                                    '<span id="album_name" class="album_name"> ' + album_name + '</span>' +
+                                    '<span id="platform_name" class="platform_name">'+'酷狗音乐'+'</span>'+
+                                    '</li>' +
+                                    '<br/>'+
+                                    '</div>'+
+                                    '</div>' + '</ul>';
+                            }
+                        })
+                    })
+                })
+                $('.li').html(data);
+            }
+        })
+    }
+
+    function getProfileImage() {
+        var userID = window.localStorage.getItem("IDkey");
+        var value = "Bearer " + window.localStorage.getItem("Tokenkey");
+        $.ajax({
+            type: 'get',
+            url: 'http://129.204.223.158/backend/user/profile/getprofile?userid=' + userID,
+            async: false,
+            beforeSend: function (request) {
+                request.setRequestHeader("Authorization", value);
+            },//JWT请求头
+            success: function (data) {
+                console.log(data);
+                var avatar = data.Avatar;
+                if (avatar != null) {
+                    $.ajax({
+                        type: 'get',
+                        url: 'http://129.204.223.158/user/profile/getavatar?avatar=' + avatar,
+                        async: false,
+                        success: function (data) {
+                            //打开一个Content-Type为image/jpg或者image/png的Stream. 客户端请连接上这个Stream, 然后将这个Stream中的data搬到buffer或者本地文件中就可以了。
+                        }
+                    })
+                }
+            },
+            error: function (data) {
+                alert("error");
+            }
+        })
+    }
+
+    function logOut() {
+        var value = "Bearer " + window.localStorage.getItem("Tokenkey");
+        $.ajax({
+            type: 'GET',
+            url: 'http://129.204.223.158/backend/user/auth/logout',
+            async: false,
+            beforeSend: function (request) {
+                request.setRequestHeader("Authorization", value);
+            },//JWT请求头
+            success: function (data) {
+                console.log(data);
+                window.location.href = "login.html";//页面跳转
+            }
+        })
+    }
+
+</script>
+</body>
+
+</html>

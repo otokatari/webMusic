@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>我的音乐</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<div class="btn">
+    <button class="btn btn-primary" onclick="addSongToList()">向歌单添加歌曲</button>
+    <button class="btn btn-primary" onclick="deleteSongFromList()">从歌单删除歌曲</button>
+</div>
+<div class="main">
+    <input id="ListName" type="text">输入歌单名字
+    <button class="btn btn-primary" onclick="createSongList()">创建歌单列表</button>
+</div>
+<div class="li">
+
+</div>
+    <script>
+
+     window.onload=function()
+        {
+            querySongList();
+        }
+
+        function createSongList() {
+            var value="Bearer "+ window.localStorage.getItem("Tokenkey");
+            var name=$('#ListName').val();//歌单名
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://129.204.223.158/backend/music/playlist/createlist',
+                    contentType: "application/json",
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        Favourite: false,
+                        Name: name,
+                    }),
+                    beforeSend: function (request) {
+                        request.setRequestHeader("Authorization", value);
+                    },//JWT请求头
+                    success: function (data) {
+                        var list='';
+                        var playlistid=data.PlaylistId;
+                            list+='<ul>'+'<li id="listelement">'+'<span> '+name+'</span>'+
+                                '<span id="playlistid"> '+ playlistid+'</span>'+
+                                '<button id="button" onclick="deleteSongList()">'+"删除"+'</button>'+'</li>'+'</ul>'
+                            $('.li').append(list);
+                    }
+                })
+        }
+
+        function querySongList()
+        {
+            var value="Bearer "+window.localStorage.getItem("Tokenkey");
+            var userid=window.localStorage.getItem("IDkey");
+            console.log(value);
+            $.ajax({
+                type:'GET',
+                url:'http://129.204.223.158/backend/music/playlist/querylist?userid='+userid,
+                contentType:"application/json",
+                dataType:'json',
+                beforeSend : function(request) {
+                    request.setRequestHeader("Authorization",value);
+                },//JWT请求头
+                success:function(data)
+                {
+                    var list='';
+                    $.each(data,function(index)
+                    {
+                        var listname=data[index].Name;
+                        var listid=data[index]._id;
+                        console.log(listid);
+                        window.localStorage.setItem("listIDkey",listid);
+                        list+='<ul>'+'<li id="listelement">'+'<span> '+listname+'</span>'+
+                            '<span id="playlistid"> '+listid+'</span>'+
+                            '<button id="button" class="btn btn-primary" onclick="deleteSongList()">'+"删除"+'</button>' +'</li>'+'</ul>'
+
+                    })
+                    $('.li').html(list);
+                }
+            })
+        }
+
+        function deleteSongList()
+        {
+            var value="Bearer "+window.localStorage.getItem("Tokenkey");
+            $.ajax({
+                type:'GET',
+                url:'http://129.204.223.158/backend/music/playlist/deletelist?playlistid=',
+                contentType:"application/json",
+                dataType:'json',
+                beforeSend : function(request) {
+                    request.setRequestHeader("Authorization",value);
+                },//JWT请求头
+                success:function(data)
+                {
+                    console.log(data);
+                }
+            })
+        }
+
+        function addSongToList()
+        {
+            var value="Bearer "+window.localStorage.getItem("Tokenkey");
+            var playlist_id=window.localStorage.getItem("playlistidkey");//获取PlaylistId
+            console.log(value);
+            $.ajax({
+                type:'POST',
+                url:'http://129.204.223.158/backend/music/playlist/addsong?playlistid='+playlist_id,
+                contentType:"application/json",
+                dataType:'json',
+                data:JSON.stringify({
+                    Musicid : "134683878C7945D01D44E9B5CF0FDF1F",
+                    Platform : "kugou",
+                    Singerid : "5085",
+                    Singername : "梁静茹",
+                    Albumname : "K歌女王 女王K歌",
+                    Albumid:"foo.bar"
+                }),
+                beforeSend : function(request) {
+                    request.setRequestHeader("Authorization",value);
+                },//JWT请求头
+                success:function(data)
+                {
+                    console.log(data);
+                }
+            })
+        }
+
+        function deleteSongFromList()
+        {
+            var value="Bearer "+window.localStorage.getItem("Tokenkey");
+            var playlist_id=window.localStorage.getItem("playlistidkey");//获取PlaylistId
+            console.log(value);
+            $.ajax({
+                type:'GET',
+                url:'http://129.204.223.158/backend/music/playlist/deletesong?playlistid='+playlist_id+'&musicid=134683878C7945D01D44E9B5CF0FDF1F',
+                contentType:"application/json",
+                dataType:'json',
+                beforeSend : function(request) {
+                    request.setRequestHeader("Authorization",value);
+                },//JWT请求头
+                success:function(data)
+                {
+                    console.log(data);
+                }
+            })
+        }
+    </script>
+</body>
+</html>
