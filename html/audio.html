@@ -67,11 +67,11 @@
             });
             break;
           }
-          case "qqmusic":{
+          case "qqmusic": {
             // TODO - implement the logic of getting music file url here.
             break;
           }
-          case "kugou":{
+          case "kugou": {
             // TODO - implement the logic of getting music file url here.
             break;
           }
@@ -90,7 +90,7 @@
       //  var audio = document.getElementsByTagName("audio")[0];
       console.log(test1);
 
-      GetMusicUrl(musicid)
+      GetMusicUrl(musicid,"netease")
         .then(
           (url) => {
             $("#player").attr("src", url);
