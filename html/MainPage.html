@@ -17,7 +17,7 @@
         .songlist_header_album,
         .songlist_header_author,
         .songlist_header_name,
-        .songlist_url{
+       {
             display:inline-block;
         }
         .songlist_header,.songlist_items_total{
@@ -38,7 +38,7 @@
             overflow:hidden;
             text-overflow:ellipsis;
         }
-        .musicid,.MusicID,.singerid,.SingerID,.musicurl,.url,.songlist_header_album,.songlist_header_author,.album_name,.artist_name,.platform,.platform_name{
+        .musicid,.MusicID,.singerid,.SingerID,.songlist_header_album,.songlist_header_author,.album_name,.artist_name,.platform,.platform_name{
             float:left;
             box-sizing: border-box;
             white-space:nowrap;
@@ -55,10 +55,7 @@
             width:10%;
         }
         .musicid,.MusicID{
-            width:2%;
-        }
-        .musicurl,.url{
-            width:2%;
+            width:4%;
         }
         .singerid,.SingerID{
             width:1%;
@@ -149,7 +146,6 @@
                 data+= '<div id="topper">'+
                     '<ul class="songlist_header">'+
                         '<li class="songlist_header_name">'+'歌曲'+'</li>'+
-                        '<li class="musicurl" style="visibility: hidden">'+'URL'+'</li>'+
                         '<li class="musicid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'MusicID'+'</span>'+'</li>'+
                         '<li class="singerid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'SingerID'+'</span>'+'</li>'+
                         '<li class="songlist_header_author">'+'歌手'+'</li>'+
@@ -163,14 +159,6 @@
                     var ID = json[index].id;    //musicid
                     var artists = json[index].artists;
                     var album_name = json[index].album.name;
-                    $.ajax({
-                        type: 'get',
-                        async: false,
-                        url: 'http://129.204.223.158/netease/song/url?id=' + encodeURIComponent(ID),
-                        success: function (data2) {
-                            var json2 = data2.data;
-                            $.each(json2, function (index) {
-                                var music_url = json2[index].url;
                                 $.each(artists, function (index2) {
                                     var artist_name = artists[index2].name;
                                     var singerid=artists[index2].id;
@@ -178,11 +166,10 @@
                                         '<ul class="songlist_items_total">' +
                                         '<li class="songlist_items">' +
                                         '<span id="song_name" class="song_name">'+'<a onclick="NeteaseGetInfo(this)" style="text-decoration: none; color:black;">'+songname+'</a>'+'</span>'+
-                                            '<span id="url" class="url" style="visibility: hidden">'+music_url+'</span>'+
                                             '<span id="MusicID" class="MusicID" style="visibility: hidden">'+ID+'</span>'+
                                             '<span id="SingerID" class="SingerID" style="visibility: hidden">'+singerid+'</span>'+
-                                        '<span id="artist_name" class="artist_name"> ' +'<a href="#" style="text-decoration: none; color:lightskyblue;"> '+ artist_name +'</a>'+ '</span>' +
-                                        '<span id="album_name" class="album_name"> ' +'<a href="#" style="text-decoration: none; color:black;"> '+album_name + '</a>'+'</span>' +
+                                        '<span id="artist_name" class="artist_name"> ' +'<a onclick="NeteaseGetSingerInfo(this)" style="text-decoration: none; color:lightskyblue;"> '+ artist_name +'</a>'+ '</span>' +
+                                        '<span id="album_name" class="album_name"> ' +'<a onclick="NeteaseGetAlbumInfo(this)" style="text-decoration: none; color:black;"> '+album_name + '</a>'+'</span>' +
                                         '<span id="platform_name" class="platform_name">' +'<a style="text-decoration: none; color:grey;"> '+'网易云音乐' + '</a>'+'</span>'+
                                             '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="NeteaseGetListInfo(this)">'+
                                         '</li>' +
@@ -193,9 +180,6 @@
                             $('.li').html(data);
                         },
                     })
-                })
-            }
-        })
     }
 
     function NeteaseGetInfo(obj)
@@ -210,17 +194,33 @@
     function NeteaseGetListInfo(obj)
     {
         element=obj.parentNode;
-        musicid=element.childNodes[2].textContent;
-        singerid=element.childNodes[3].textContent;
+        musicid=element.childNodes[1].textContent;
+        singerid=element.childNodes[2].textContent;
         songname=element.childNodes[0].textContent;
-        artistname=element.childNodes[4].textContent;
-        albumname=element.childNodes[5].textContent;
+        artistname=element.childNodes[3].textContent;
+        albumname=element.childNodes[4].textContent;
         window.localStorage.setItem("musicidkey",musicid);
         window.localStorage.setItem("singeridkey",singerid);
         window.localStorage.setItem("songnamekey",songname);
         window.localStorage.setItem("artistnamekey",artistname);
         window.localStorage.setItem("albumnamekey",albumname);
         NeteaseAddSongToList(this);
+    }
+
+    function NeteaseGetAlbumInfo(obj)
+    {
+        element2=obj.parentNode.parentNode;
+        albumname=element2.childNodes[4].textContent;
+        window.localStorage.setItem("albumnamekey2",albumname);
+        window.location.href="NeteaseSameAlbumSongList.html";
+    }
+
+    function NeteaseGetSingerInfo(obj)
+    {
+        element3=obj.parentNode.parentNode;
+        singername=element3.childNodes[3].textContent;
+        window.localStorage.setItem("singernamekey2",singername);
+        window.location.href="NeteaseSameSingerList.html";
     }
 
     function NeteaseAddSongToList(obj)
@@ -256,15 +256,6 @@
         })
     }
 
-    function KugouGetInfo(obj)
-    {
-        parentelement=obj.parentNode.parentNode;
-        test11=parentelement.childNodes[1].textContent;
-        window.localStorage.setItem("test11key",test11);
-        console.log(test11);
-        window.location.href="audio.html";
-    }
-
     function QQmusicshow() {
         var urlextra = $('#key').val();
         $.ajax({
@@ -277,6 +268,8 @@
                 data+= '<div id="topper">'+
                     '<ul class="songlist_header">'+
                     '<li class="songlist_header_name">'+'歌曲'+'</li>'+
+                    '<li class="musicid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'MusicID'+'</span>'+'</li>'+
+                    '<li class="singerid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'SingerID'+'</span>'+'</li>'+
                     '<li class="songlist_header_author">'+'歌手'+'</li>'+
                     '<li class="songlist_header_album">'+'专辑'+'</li>'+
                     '<li class="platform">'+'平台'+'</li>'+
@@ -284,43 +277,61 @@
                     '</div>';
 
                 $.each(json, function (index) {
-                    var album_name = json[index].albumname
+                    var album_name = json[index].albumname;
                     var songname = json[index].songname;
                     var artists = json[index].singer;
                     var songmid = json[index].songmid;
-                    $.ajax({
-                        type: 'get',
-                        url: 'http://129.204.223.158/qqmusic/song/vkey?songmid=' + songmid,
-                        async: false,
-                        success: function (data2) {
-                            var json2 = data2.data.items;
-                            $.each(json2, function (index) {
-                                var vkey = json2[index].vkey;
-                                console.log(vkey);
-                                $.ajax({
-                                    type: 'get',
-                                    url: 'http://isure.stream.qqmusic.qq.com/C400' + encodeURIComponent(songmid) + '.m4a?guid=5448538077&vkey=' + vkey + '&uin=0&fromtag=66',
-                                    async: false,
+                    var singerid = json[index].singer;
+                    $.each(singerid, function (index2) {
+                        var singerID = singerid[index2].id;
+                        $.ajax({
+                            type: 'get',
+                            url: 'http://129.204.223.158/qqmusic/song/vkey?songmid=' + songmid,
+                            async: false,
+                            success: function (data2) {
+                                var json2 = data2.data.items;
+                                $.each(json2, function (index) {
+                                    var vkey = json2[index].vkey;
+                                    console.log(vkey);
                                 })
-                            })
-                        }
-                    })
-                    $.each(artists, function (index2) {
-                        var artist_name = artists[index2].name;
-                        data +='<div class="li">'+
-                            '<ul class="songlist_items_total">' +
-                            '<li class="songlist_items">' +
-                            '<span id="song_name" class="song_name"> ' + '<a id="name" href="audio.html" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
-                            '<span class="artist_name"> ' + artist_name + '</span>' +
-                            '<span id="album_name" class="album_name"> ' + album_name + '</span>' +
-                            '<span id="platform_name" class="platform_name">' + 'QQ音乐' + '</span>' +
-                            '</li>' +
-                            '<br/>'+ '</ul>'+'</div>';
+                            }
+                        })
+                        $.each(artists, function (index2) {
+                            var artist_name = artists[index2].name;
+                            data += '<div class="li">' +
+                                '<ul class="songlist_items_total">' +
+                                '<li class="songlist_items">' +
+                                '<span id="song_name" class="song_name"> ' + '<a id="name" href="audio.html" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
+                                '<span id="MusicID" class="MusicID" style="visibility: hidden"> ' + songmid + '</span>' +
+                                '<span id="SingerID" class="SingerID" style="visibility: hidden"> ' + singerID + '</span>' +
+                                '<span class="artist_name"> ' +'<a onclick="QQmusicGetSingerList(this)" style="text-decoration: none;"> '+artist_name+'</a>'+ '</span>' +
+                                '<span id="album_name" class="album_name"> ' +'<a onclick="QQmusicGetAlbumList(this)" style="text-decoration: none"> '+album_name+'</a>'+ '</span>' +
+                                '<span id="platform_name" class="platform_name">' + 'QQ音乐' + '</span>' +
+                                '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="QQmusicGetListInfo(this)">' +
+                                '</li>' +
+                                '<br/>' + '</ul>' + '</div>';
+                        })
                     })
                 })
                 $('.li').html(data);//页面显示数据
             },
         })
+    }
+
+    function QQmusicGetAlbumList(obj)
+    {
+          element5=obj.parentNode.parentNode;
+          albumname=element5.childNodes[4].textContent;
+          window.localStorage.setItem("QQmusicalbumnamekey",albumname);
+          window.location.href="QQmusicSameAlbumList.html";
+    }
+
+    function QQmusicGetSingerList(obj)
+    {
+        element6=obj.parentNode.parentNode;
+        singername=element6.childNodes[3].textContent;
+        window.localStorage.setItem("QQmusicsingernamekey",singername);
+        window.location.href="QQmusicSameSingerList.html";
     }
 
     function Kugoushow()
@@ -336,6 +347,8 @@
                 data+= '<div id="topper">'+
                     '<ul class="songlist_header">'+
                     '<li class="songlist_header_name">'+'歌曲'+'</li>'+
+                    '<li class="musicid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'MusicID'+'</span>'+'</li>'+
+                    '<li class="singerid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'SingerID'+'</span>'+'</li>'+
                     '<li class="songlist_header_author">'+'歌手'+'</li>'+
                     '<li class="songlist_header_album">'+'专辑'+'</li>'+
                     '<li class="platform">'+'平台'+'</li>'+
@@ -348,32 +361,52 @@
                     var grp = json[index].Grp;
                     $.each(grp, function (index2) {
                         var album_name = grp[index2].AlbumName;
+                        var author_id=grp[index2].author_id;
                         var filehash = grp[index2].FileHash;
                         console.log(filehash);
-                        $.ajax({
-                            type: 'get',
-                            url: 'http://129.204.223.158/kugou/songurl?hash=' + filehash,//获取音乐URL
-                            async: false,
-                            success: function (data2) {
-                                var music_url = data2.data.play_url;
-                                console.log(music_url);
                                 data += '<div class="li">'+
                                     '<ul class="songlist_items_total">' +
                                     '<li class="songlist_items">' +
                                     '<span id="song_name" class="song_name"> ' + '<a id="name" onclick="KugouGetInfo(this)" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
-                                    '<span id="url" class="url" style="visibility: hidden"> '+music_url+'</span>'+
-                                    '<span class="artist_name"> ' + artistname + '</span>' +
-                                    '<span id="album_name" class="album_name"> ' + album_name + '</span>' +
+                                    '<span id="MusicID" class="MusicID" style="visibility: hidden"> '+filehash+'</span>'+
+                                    '<span id="SingerID" class="SingerID" style="visibility: hidden"> '+author_id+'</span>'+
+                                    '<span id="artist_name" class="artist_name"> ' +'<a onclick="KugouGetSingerList(this)" style="text-decoration: none;"> '+artistname+'</a> '+ '</span>' +
+                                    '<span id="album_name" class="album_name"> ' +'<a onclick="KugouGetAlbumList(this)" style="text-decoration: none"> '+album_name+'</a> '+'</span>' +
                                     '<span id="platform_name" class="platform_name">'+'酷狗音乐'+'</span>'+
+                                    '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="KugouGetListInfo(this)">'+
                                     '</li>' +
                                     '<br/>'+ '</ul>'+'</div>';
-                            }
+                            })
                         })
-                    })
-                })
                 $('.li').html(data);
-            }
-        })
+                    }
+
+            })
+    }
+
+    function KugouGetInfo(obj)
+    {
+        parentelement=obj.parentNode.parentNode;
+        test11=parentelement.childNodes[1].textContent;
+        window.localStorage.setItem("test11key",test11);
+        console.log(test11);
+        window.location.href="audio.html";
+    }
+
+    function KugouGetSingerList(obj)
+    {
+        element3=obj.parentNode.parentNode;
+        singername=element3.childNodes[3].textContent;
+        window.localStorage.setItem("kugousingernamekey",singername);
+        window.location.href="KugouSameSingerList.html";
+    }
+
+    function KugouGetAlbumList(obj)
+    {
+        element4=obj.parentNode.parentNode;
+        albumname=element4.childNodes[4].textContent;
+        window.localStorage.setItem("kugoualbumnamekey",albumname);
+        window.location.href="KugouSameAlbumList.html";
     }
 
     function getProfileImage() {

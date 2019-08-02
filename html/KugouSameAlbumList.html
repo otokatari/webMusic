@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .li{
+            width:90%;
+            margin:0 auto;
+        }
+        #topper{
+            width:90%;
+            margin:0 auto;
+        }
+        .songlist_header_author,
+        .songlist_header_name,
+       {
+            display:inline-block;
+        }
+        .songlist_header,.songlist_items_total{
+            padding-left:20px;
+            padding-right: 120px;
+        }
+        .songlist_header{
+            height:55px;
+            line-height:55px;
+            color:#999;
+            background-color: rgba(0,0,0,0.03);
+        }
+        .songlist_header_name,.song_name{
+            float:left;
+            width:40%;
+            position:relative;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .musicid,.MusicID,.singerid,.SingerID,.songlist_header_author,.artist_name,.platform,.platform_name{
+            float:left;
+            box-sizing: border-box;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_author,.artist_name{
+            width:30%;
+        }
+        .platform,.platform_name{
+            width:10%;
+        }
+        .musicid,.MusicID{
+            width:10%;
+        }
+        .singerid,.SingerID{
+            width:10%;
+        }
+        .songlist_items{
+            list-style: none;
+        }
+        span{
+            font-size:20px;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+<div class="li">
+</div>
+
+<script>
+    window.onload=function()
+    {
+        show();
+    }
+
+    function show()
+    {
+        var albumname=window.localStorage.getItem("kugoualbumnamekey");
+        console.log(albumname);
+        $.ajax({
+            type: 'GET',
+            url: 'http://129.204.223.158/kugou/search?keywords=' +albumname, //请求数据的地址
+            async: false,
+            success: function (data1) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+                var json = data1.data.lists;
+                console.log(json);
+                var data = '';
+                data += '<div id="topper">' +
+                    '<ul class="songlist_header">' +
+                    '<li class="songlist_header_name">' + '歌曲' + '</li>' +
+                    '<li class="musicid" style="visibility: hidden">' + '<span style="visibility: hidden"> ' + 'MusicID' + '</span>' + '</li>' +
+                    '<li class="singerid" style="visibility: hidden">' + '<span style="visibility: hidden"> ' + 'SingerID' + '</span>' + '</li>' +
+                    '<li class="songlist_header_author">' + '歌手' + '</li>' +
+                    '<li class="platform">' + '平台' + '</li>' +
+                    '</ul>' +
+                    '</div>';
+
+                $.each(json, function (index) {
+                    var artist_name = json[index].SingerName;
+                    console.log(artist_name);
+                    var songname = json[index].SongName;
+                    var grp = json[index].Grp;
+                    console.log(grp);
+                    $.each(grp, function (index2) {
+                        var author_id = grp[index2].author_id;
+                        var filehash = grp[index2].FileHash;
+                        console.log(filehash);
+                        data += '<div class="li">' +
+                            '<ul class="songlist_items_total">' +
+                            '<li class="songlist_items">' +
+                            '<span id="song_name" class="song_name"> ' + '<a id="name" onclick="KugouGetInfo(this)" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
+                            '<span id="MusicID" class="MusicID" style="visibility: hidden"> ' + filehash + '</span>' +
+                            '<span id="SingerID" class="SingerID" style="visibility: hidden"> ' + author_id + '</span>' +
+                            '<span id="artist_name" class="artist_name"> ' + '<a onclick="KugouGetSingerList(this)" style="text-decoration: none; color:lightskyblue;"> ' + artist_name + '</a>' + '</span>' +
+                            '<span id="platform_name" class="platform_name">' + '酷狗音乐' + '</span>' +
+                            '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="KugouGetListInfo(this)">' +
+                            '</li>' +
+                            '<br/>' + '</ul>' + '</div>';
+                    })
+                })
+                $('.li').html(data);
+            }
+            })
+    }
+
+    function KugouGetInfo(obj)
+    {
+        parentelement=obj.parentNode.parentNode;
+        test11=parentelement.childNodes[1].textContent;
+        window.localStorage.setItem("test11key",test11);
+        console.log(test11);
+        window.location.href="audio.html";
+    }
+
+    function KugouGetSingerList(obj)
+    {
+        element3=obj.parentNode.parentNode;
+        singername=element3.childNodes[3].textContent;
+        window.localStorage.setItem("kugousingernamekey",singername);
+        window.location.href="KugouSameSingerList.html";
+    }
+
+</script>
+</body>
+</html>

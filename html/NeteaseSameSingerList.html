@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .li{
+            width:90%;
+            margin:0 auto;
+        }
+        #topper{
+            width:90%;
+            margin:0 auto;
+        }
+        .songlist_header_album,
+        .songlist_header_name,
+       {
+            display:inline-block;
+        }
+        .songlist_header,.songlist_items_total{
+            padding-left:20px;
+            padding-right: 120px;
+        }
+        .songlist_header{
+            height:55px;
+            line-height:55px;
+            color:#999;
+            background-color: rgba(0,0,0,0.03);
+        }
+        .songlist_header_name,.song_name{
+            float:left;
+            width:40%;
+            position:relative;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .musicid,.MusicID,.singerid,.SingerID,.songlist_header_album,.album_name,.platform,.platform_name{
+            float:left;
+            box-sizing: border-box;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_album,.album_name{
+            width:30%;
+        }
+        .platform,.platform_name{
+            width:10%;
+        }
+        .musicid,.MusicID{
+            width:10%;
+        }
+        .singerid,.SingerID{
+            width:10%;
+        }
+        .songlist_items{
+            list-style: none;
+        }
+        span{
+            font-size:20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+<div class="top">
+</div>
+
+<div class="li">
+</div>
+
+<script>
+    window.onload=function()
+    {
+        show();
+    }
+
+    function show()
+    {
+        var singername=window.localStorage.getItem("singernamekey2");
+        $.ajax({
+            type:'get',
+            url:'http://129.204.223.158/netease/search?keywords=' +singername,
+            async:false,
+            success: function (data1) { //请求成功时执行该函数内容，data即为服务器返回的json对象
+                var json=data1.result.songs;
+                var data = '';
+                data+= '<div id="topper">'+
+                    '<ul class="songlist_header">'+
+                    '<li class="songlist_header_name">'+'歌曲'+'</li>'+
+                    '<li class="musicid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'MusicID'+'</span>'+'</li>'+
+                    '<li class="singerid" style="visibility: hidden">'+'<span style="visibility: hidden"> '+'SingerID'+'</span>'+'</li>'+
+                    '<li class="songlist_header_album">'+'专辑'+'</li>'+
+                    '<li class="platform">'+'平台'+'</li>'+
+                    '</ul>'+
+                    '</div>';
+
+                $.each(json, function (index) {
+                    var songname = json[index].name;
+                    var ID = json[index].id;    //musicid
+                    var artists = json[index].artists;
+                    var album_name = json[index].album.name;
+                                $.each(artists, function (index2) {
+                                    var singerid=artists[index2].id;
+                                    data += '<div class="li">'+
+                                        '<ul class="songlist_items_total">' +
+                                        '<li class="songlist_items">' +
+                                        '<span id="song_name" class="song_name">'+'<a onclick="NeteaseGetInfo(this)" style="text-decoration: none; color:black;">'+songname+'</a>'+'</span>'+
+                                        '<span id="MusicID" class="MusicID" style="visibility: hidden">'+ID+'</span>'+
+                                        '<span id="SingerID" class="SingerID" style="visibility: hidden">'+singerid+'</span>'+
+                                        '<span id="album_name" class="album_name"> ' +'<a onclick="NeteaseGetAlbumInfo(this)" style="text-decoration: none; color:black;"> '+album_name + '</a>'+'</span>' +
+                                        '<span id="platform_name" class="platform_name">' +'<a style="text-decoration: none; color:grey;"> '+'网易云音乐' + '</a>'+'</span>'+
+                                        '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="NeteaseGetListInfo(this)">'+
+                                        '</li>' +
+                                        '<br>'+
+                                        '</ul>'+'</div>';
+                                })
+                            })
+                            $('.li').html(data);
+                        },
+                    })
+            }
+
+
+    function NeteaseGetInfo(obj)
+    {
+        parentelement=obj.parentNode.parentNode;
+        test10=parentelement.childNodes[1].textContent;
+        window.localStorage.setItem("test10key",test10);
+        console.log(test10);
+        window.location.href="audio.html";
+    }
+
+    function NeteaseGetAlbumInfo(obj)
+    {
+        element2=obj.parentNode.parentNode;
+        albumname=element2.childNodes[3].textContent;
+        window.localStorage.setItem("albumnamekey2",albumname);
+        window.location.href="NeteaseSameAlbumSongList.html";
+    }
+
+</script>
+</body>
+</html>
