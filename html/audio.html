@@ -1,70 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-    <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
+
 <body>
 
-<input type="button" class="btn btn-primary" onclick="audioplay()" value="播放">
+  <input type="button" class="btn btn-primary" onclick="audioplay()" value="播放">
 
-<audio controls preload="auto" autoplay loop="loop">
-    <source id="source">
-</audio>
+  <audio controls id="player" preload="auto" autoplay loop="loop"></audio>
 
-<script>
-    //网易云播放
-     function audioplay() {
-        var test1 = window.localStorage.getItem("test10key");
-        var musicid=window.localStorage.getItem("musicidkey");
-        var singerid=window.localStorage.getItem("singeridkey");
-        var songname=window.localStorage.getItem("songnamekey");
-        var artistname=window.localStorage.getItem("artistnamekey");
-        var audio=document.getElementsByTagName("audio")[0];
-        console.log(test1);
-        document.getElementById("source").src=test1;
-        audio.setAttribute("src",test1);
-        audio.load();
+  <script>
 
-         var value="Bearer "+window.localStorage.getItem("Tokenkey");
-         var userid=window.localStorage.getItem("IDkey");
-
-        $.ajax({
-            type:'POST',
-            url: 'http://129.204.223.158/backend/music/tracking/behaviour',
-            contentType:'application/json',
-            dataType:'json',
-            data:JSON.stringify({
-                Userid:userid,
-                Behaviour:"listen",
-                Time:Math.round(new Date().getTime()/1000),
-                Music:{
-                    Musicid:musicid,
-                    Name:songname,
-                    Platform:"netease",
-                    Singerid:singerid,
-                    Singername:artistname,
-                    },
-                Isinplaylist:false,
-            }),
-            beforeSend: function (request) {
-                request.setRequestHeader("Authorization", value);
-            },//JWT请求头
-            success:function(data)
-            {
-                console.log(data)
-            },
-            error:function(error)
-            {
-                console.log(error);
-            }
-        })
+    function ReportBehaviour(musicid, songname, singerid, artistname) {
+      var value = "Bearer " + window.localStorage.getItem("Tokenkey");
+      var userid = window.localStorage.getItem("IDkey");
+      $.ajax({
+        type: 'POST',
+        url: 'http://129.204.223.158/backend/music/tracking/behaviour',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({
+          Userid: userid,
+          Behaviour: "listen",
+          Time: Math.round(new Date().getTime() / 1000),
+          Music: {
+            Musicid: musicid,
+            Name: songname,
+            Platform: "netease",
+            Singerid: singerid,
+            Singername: artistname,
+          },
+          Isinplaylist: false,
+        }),
+        beforeSend: function (request) {
+          request.setRequestHeader("Authorization", value);
+        },//JWT请求头
+        success: function (data) {
+          console.log(data)
+        },
+        error: function (error) {
+          console.log(error);
+        }
+      })
     }
 
-</script>
+    function GetMusicUrl(musicid, platform) {
+      return new Promise((resolve, reject) => {
+        switch (platform) {
+          case "netease": {
+            $.ajax({
+              type: "GET",
+              url: "http://129.204.223.158/netease/song/url?id=" + musicid,
+              success: (resp) => {
+                if (resp.data instanceof Array && resp.data.length > 0) {
+                  resolve(resp.data[0].url);
+                }
+                reject("No music url.");
+              },
+              error: (err) => reject(err)
+            });
+            break;
+          }
+          case "qqmusic":{
+            // TODO - implement the logic of getting music file url here.
+            break;
+          }
+          case "kugou":{
+            // TODO - implement the logic of getting music file url here.
+            break;
+          }
+        }
+      })
+    }
+
+    //网易云播放
+    function audioplay() {
+      var test1 = window.localStorage.getItem("test10key");
+
+      var musicid = window.localStorage.getItem("musicidkey");
+      var singerid = window.localStorage.getItem("singeridkey");
+      var songname = window.localStorage.getItem("songnamekey");
+      var artistname = window.localStorage.getItem("artistnamekey");
+      //  var audio = document.getElementsByTagName("audio")[0];
+      console.log(test1);
+
+      GetMusicUrl(musicid)
+        .then(
+          (url) => {
+            $("#player").attr("src", url);
+          },
+          (err) => console.log(err)
+        );
+
+      // document.getElementById("source").src = test1;
+      // audio.setAttribute("src", test1);
+      // audio.load();
+
+      ReportBehaviour(musicid, songname, singerid, artistname);
+
+    }
+
+
+  </script>
 
 </body>
+
 </html>
