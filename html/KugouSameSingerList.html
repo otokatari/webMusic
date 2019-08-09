@@ -66,11 +66,11 @@
     <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div class="top">
 
+<div class="top">
+    <h2 class="singernametitle"></h2>
 </div>
 <div class="li">
-
 </div>
 <script>
     window.onload=function()
@@ -78,9 +78,10 @@
         show();
     }
 
+    var singername=window.localStorage.getItem("kugousingernamekey");
     function show()
     {
-        var singername=window.localStorage.getItem("kugousingernamekey");
+        $('.singernametitle').html(singername);
         $.ajax({
             type: 'get',
             url: 'http://129.204.223.158/kugou/search?keywords=' + singername, //请求数据的地址
@@ -109,13 +110,13 @@
                                 data += '<div class="li">'+
                                     '<ul class="songlist_items_total">' +
                                     '<li class="songlist_items">' +
-                                    '<span id="song_name" class="song_name"> ' + '<a id="name" onclick="KugouGetInfo(this)" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
-                                    '<span id="MusicID" class="MusicID" style="visibility: hidden"> '+filehash+'</span>'+
-                                    '<span id="SingerID" class="SingerID" style="visibility: hidden"> '+author_id+'</span>'+
-                                    '<span id="album_name" class="album_name"> ' +'<a onclick="KugouGetAlbumList(this)"> '+album_name+'</a> '+'</span>' +
-                                    '<span id="platform_name" class="platform_name">'+'酷狗音乐'+'</span>'+
+                                    '<span id="song_name" class="song_name">' + '<a id="name" onclick="KugouGetInfo(this)" style="text-decoration: none; color:black">'+songname+'</a>'+'</span>'+
+                                    '<span id="MusicID" class="MusicID" style="visibility: hidden">'+filehash+'</span>'+
+                                    '<span id="SingerID" class="SingerID" style="visibility: hidden">'+author_id+'</span>'+
+                                    '<span id="album_name" class="album_name">'+'<a onclick="KugouGetAlbumList(this)" style="text-decoration: none; color:lightskyblue"> '+album_name+'</a> '+'</span>' +
+                                    '<span id="platform_name" class="platform_name">'+'<a style="text-decoration: none; color:grey">'+'酷狗音乐'+'</a>'+'</span>'+
                                     '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="KugouGetListInfo(this)">'+
-                                    '</li>' +
+                                    '</li>'+
                                     '<br/>'+ '</ul>'+'</div>';
                             })
                     })
@@ -127,10 +128,14 @@
     function KugouGetInfo(obj)
     {
         parentelement=obj.parentNode.parentNode;
-        test11=parentelement.childNodes[1].textContent;
-        window.localStorage.setItem("test11key",test11);
-        console.log(test11);
-        window.location.href="audio.html";
+        filehash=parentelement.childNodes[1].textContent;
+        kugousongnametitle=parentelement.childNodes[0].textContent;
+        kugoualbumnametitle=parentelement.childNodes[3].textContent;
+        window.localStorage.setItem("filehashkey",filehash);
+        window.localStorage.setItem("kugoualbumnametitlekey",kugoualbumnametitle);
+        window.localStorage.setItem("kugousongnametitlekey",kugousongnametitle);
+        window.localStorage.setItem("kugouartistnametitlekey",singername);
+        window.location.href="Kugouaudio.html";
     }
 
     function KugouGetAlbumList(obj)
@@ -141,6 +146,55 @@
         window.location.href="KugouSameAlbumList.html";
     }
 
+
+    function KugouGetListInfo(obj)
+    {
+        element8=obj.parentNode;
+        kugoumusicid=element8.childNodes[1].textContent;
+        kugousingerid=element8.childNodes[2].textContent;
+        kugousongname=element8.childNodes[0].textContent;
+        kugoualbumname=element8.childNodes[3].textContent;
+        window.localStorage.setItem("kugoumusicidkey",kugoumusicid);
+        window.localStorage.setItem("kugousingeridkey",kugousingerid);
+        window.localStorage.setItem("kugousongnamekey",kugousongname);
+        window.localStorage.setItem("kugouartistnamekey",singername);
+        window.localStorage.setItem("kugoualbumnamekey",kugoualbumname);
+        KugouAddSongToList(this);
+    }
+
+    function KugouAddSongToList(obj)
+    {
+        var value="Bearer "+window.localStorage.getItem("Tokenkey");
+        var musiclistID=obj.window.localStorage.getItem("kugoulistidkey");
+        console.log(musiclistID);
+        var kugoumusicid=obj.window.localStorage.getItem("kugoumusicidkey");
+        var kugousingerid=obj.window.localStorage.getItem("kugousingeridkey");
+        var kugousongname=obj.window.localStorage.getItem("kugousongnamekey");
+        var kugousingername=obj.window.localStorage.getItem("kugouartistnamekey");
+        var kugoualbumname=obj.window.localStorage.getItem("kugoualbumnamekey");
+        console.log(value);
+        $.ajax({
+            type:'POST',
+            url:'http://129.204.223.158/backend/music/playlist/addsong?playlistid='+musiclistID,
+            contentType:"application/json",
+            dataType:'json',
+            data:JSON.stringify({
+                Musicid :kugoumusicid ,
+                Platform : "kugou",
+                Singerid : kugousingerid,
+                Singername :kugousingername ,
+                Name:kugousongname,
+                Albumname:kugoualbumname,
+            }),
+            beforeSend : function(request) {
+                request.setRequestHeader("Authorization",value);
+            },//JWT请求头
+            success:function(data)
+            {
+                console.log(data);
+            }
+        })
+    }
 </script>
 </body>
 </html>

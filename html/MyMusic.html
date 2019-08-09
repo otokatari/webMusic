@@ -35,7 +35,7 @@
             overflow:hidden;
             text-overflow:ellipsis;
         }
-        .id,.amount,.operation,.listid{
+        .id,.amount,.operation,.listid,.songsamount,.songs,.song{
             float:left;
             box-sizing: border-box;
             white-space:nowrap;
@@ -43,17 +43,20 @@
             text-overflow:ellipsis;
         }
         .id,.listid{
-            width:20%;
+            width:15%;
         }
-        .amount{
+        .amount,.songsamount{
             width:20%;
         }
         .operation{
             width:20%;
         }
+        .songs,.song{
+            width:5%;
+        }
         .listheader,.listtotal{
             padding-left:20px;
-            padding-right: 120px;
+            padding-right: 10px;
         }
         .listheader{
             height:60px;
@@ -93,14 +96,13 @@
         window.onload=function()
         {
             querySongList();
-
         }
 
         function querySongList()
         {
          var value="Bearer "+window.localStorage.getItem("Tokenkey");
          var userid=window.localStorage.getItem("IDkey");
-         console.log(value);
+         console.log(userid);
          $.ajax({
              type:'GET',
              url:'http://129.204.223.158/backend/music/playlist/querylist?userid='+userid,
@@ -116,6 +118,7 @@
                  list+= '<ul class="listheader">'+'<li class="listtotal">'+
                      '<span class="list">'+'歌单'+'</span>'+
                      '<span class="id" style="visibility: hidden">'+'ID'+'</span>'+
+                     '<span class="songs" style="visibility: hidden">'+'歌曲'+'</span>'+
                      '<span class="amount">'+'曲目数'+'</span>'+
                      '<span class="operation">'+'操作'+'</span>'+
                      '</li>'+'</ul>';
@@ -125,8 +128,11 @@
                      var listname=data[index].Name;
                      var listid=data[index]._id;
                      var songs=data[index].Songs;
-                         list += '<ul id="ul" class="ul">' + '<li id="listelement" class="listelement">' + '<span class="listname">' + '<a onclick="getListName(this)">' + listname + '</a>' + '</span>' +
-                             '<span style="visibility: hidden">' + listid + '</span>' +
+                     var str_songs=JSON.stringify(songs);
+                         list += '<ul id="ul" class="ul">' + '<li id="listelement" class="listelement">' + '<span class="listname">' + '<a onclick="getListInfo(this)" style="text-decoration: none; color:lightskyblue">' + listname + '</a>' + '</span>' +
+                             '<span style="visibility: hidden" class="song">'+str_songs+'</span>'+
+                             '<span style="visibility: hidden" class="listid">' +'<a>'+listid+'</a>'+ '</span>' +
+                             '<span class="songsamount">'+'<p style="color:black">'+songs.length+'首'+'</p>'+'</span>'+
                              '<input id="button" type="button" class="btn btn-primary" value="删除" onclick="del(this)">' + '</li>' + '</ul>'
                  })
                  $('.songlistitems').html(list);
@@ -134,19 +140,17 @@
          })
      }
 
-     function getListName(obj)
+     function getListInfo(obj)
      {
          lielement=obj.parentNode.parentNode;
          textelement=lielement.childNodes[0].textContent;
-         console.log(textelement);
-         window.localStorage.setItem("listnametextkey",textelement)
+         songslist=lielement.childNodes[1].textContent;
+         playlistid=lielement.childNodes[2].textContent;
+         console.log(songslist);
+         window.localStorage.setItem("listnametextkey",textelement);
+         window.localStorage.setItem("strsongslistkey",songslist);
+         window.localStorage.setItem("playlistidkey",playlistid);
          window.location.href="MyMusicDetail.html";
-         getSongList(this);
-     }
-
-     function getSongList(obj)
-     {
-
      }
 
         function createSongList() {
@@ -167,10 +171,17 @@
                     success: function (data) {
                         var list='';
                         var playlistid=data.PlaylistId;
-                            list+='<ul class="ul" id="ul">'+'<li id="listelement" class="listelement">'+'<span class="listname">'+'<a onclick="getListName(this)">'+name+'</a>'+'</span>'+
-                                '<span style="visibility: hidden" class="listid">'+playlistid+'</span>'+
-                                '<input type="button" id="button" value="删除" class="btn btn-primary" onclick="del(this)">'+'</li>'+'</ul>'
+                        list += '<ul id="ul" class="ul">' + '<li id="listelement" class="listelement">' + '<span class="listname">' + '<a onclick="getListInfo(this)" style="text-decoration: none; color:lightskyblue">' + name + '</a>' + '</span>' +
+                            '<span style="visibility: hidden" class="song">'+'str_songs'+'</span>'+
+                            '<span style="visibility: hidden" class="listid">' +'<a>'+playlistid+'</a>'+ '</span>' +
+                            '<span class="songsamount">'+'<p>'+'0首'+'</p>'+'</span>'+
+                            '<input id="button" type="button" class="btn btn-primary" value="删除" onclick="del(this)">' + '</li>' + '</ul>'
                         $('.songlistitems').append(list);
+                    },
+                    error:function(error)
+                    {
+                        console.log(error);
+                        window.location.href="login.html";
                     }
                 })
         }
@@ -179,9 +190,9 @@
         function del(obj)
         {
             btnTrElement = obj.parentNode;
-            test0=btnTrElement.childNodes[1].textContent;
-            window.localStorage.setItem("test0key",test0);
+            test0=btnTrElement.childNodes[2].textContent;
             console.log(test0);
+            window.localStorage.setItem("test0key",test0);
             tbodyElemement = btnTrElement.parentNode;
             tbodyElemement.removeChild(btnTrElement);
             deleteSongList(this);
@@ -207,54 +218,6 @@
             })
         }
 
-        function addSongToList2(obj)
-        {
-            var value="Bearer "+window.localStorage.getItem("Tokenkey");
-            //var playlist_id=window.localStorage.getItem("playlistidkey");//获取PlaylistId
-            var musicid=obj.window.localStorage.getItem("musicidkey");
-            var singerid=obj.window.localStorage.getItem("singeridkey");
-            var singername=obj.window.localStorage.getItem("singernamekey");
-            console.log(value);
-            $.ajax({
-                type:'POST',
-                url:'http://129.204.223.158/backend/music/playlist/addsong?playlistid=5d39c101717ddb1ae24bff01',
-                contentType:"application/json",
-                dataType:'json',
-                data:JSON.stringify({
-                    Musicid :musicid ,
-                    Platform : "netease",
-                    Singerid : singerid,
-                    Singername :singername ,
-                }),
-                beforeSend : function(request) {
-                    request.setRequestHeader("Authorization",value);
-                },//JWT请求头
-                success:function(data)
-                {
-                    console.log(data);
-                }
-            })
-        }
-
-        function deleteSongFromList()
-        {
-            var value="Bearer "+window.localStorage.getItem("Tokenkey");
-            var playlist_id=window.localStorage.getItem("playlistidkey");//获取PlaylistId
-            console.log(value);
-            $.ajax({
-                type:'GET',
-                url:'http://129.204.223.158/backend/music/playlist/deletesong?playlistid='+playlist_id+'&musicid=134683878C7945D01D44E9B5CF0FDF1F',
-                contentType:"application/json",
-                dataType:'json',
-                beforeSend : function(request) {
-                    request.setRequestHeader("Authorization",value);
-                },//JWT请求头
-                success:function(data)
-                {
-                    console.log(data);
-                }
-            })
-        }
     </script>
 </body>
 </html>

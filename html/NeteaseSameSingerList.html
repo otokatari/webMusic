@@ -60,6 +60,14 @@
         span{
             font-size:20px;
         }
+        .top{
+            width:90%;
+            height:10%;
+        }
+        h2{
+            margin:0 auto;
+            text-align: center;
+        }
     </style>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
@@ -69,6 +77,7 @@
 <body>
 
 <div class="top">
+    <h2 class="singernametitle"></h2>
 </div>
 
 <div class="li">
@@ -80,12 +89,13 @@
         show();
     }
 
+    var singername=window.localStorage.getItem("singernamekey2");
     function show()
     {
-        var singername=window.localStorage.getItem("singernamekey2");
+        $('.singernametitle').html(singername);
         $.ajax({
             type:'get',
-            url:'http://129.204.223.158/netease/search?keywords=' +singername,
+            url:'http://129.204.223.158/netease/search?keywords='+singername,
             async:false,
             success: function (data1) { //请求成功时执行该函数内容，data即为服务器返回的json对象
                 var json=data1.result.songs;
@@ -113,7 +123,7 @@
                                         '<span id="song_name" class="song_name">'+'<a onclick="NeteaseGetInfo(this)" style="text-decoration: none; color:black;">'+songname+'</a>'+'</span>'+
                                         '<span id="MusicID" class="MusicID" style="visibility: hidden">'+ID+'</span>'+
                                         '<span id="SingerID" class="SingerID" style="visibility: hidden">'+singerid+'</span>'+
-                                        '<span id="album_name" class="album_name"> ' +'<a onclick="NeteaseGetAlbumInfo(this)" style="text-decoration: none; color:black;"> '+album_name + '</a>'+'</span>' +
+                                        '<span id="album_name" class="album_name"> ' +'<a onclick="NeteaseGetAlbumInfo(this)" style="text-decoration: none; color:lightskyblue;"> '+album_name + '</a>'+'</span>' +
                                         '<span id="platform_name" class="platform_name">' +'<a style="text-decoration: none; color:grey;"> '+'网易云音乐' + '</a>'+'</span>'+
                                         '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="NeteaseGetListInfo(this)">'+
                                         '</li>' +
@@ -130,10 +140,14 @@
     function NeteaseGetInfo(obj)
     {
         parentelement=obj.parentNode.parentNode;
+        neteasesongnametitle=parentelement.childNodes[0].textContent;
         test10=parentelement.childNodes[1].textContent;
+        neteasealbumnametitle=parentelement.childNodes[3].textContent;
         window.localStorage.setItem("test10key",test10);
-        console.log(test10);
-        window.location.href="audio.html";
+        window.localStorage.setItem("neteasesongnametitlekey",neteasesongnametitle);
+        window.localStorage.setItem("neteaseartistnametitlekey",singername);
+        window.localStorage.setItem("neteasealbumnametitlekey",neteasealbumnametitle);
+        window.location.href="Neteaseaudio.html";
     }
 
     function NeteaseGetAlbumInfo(obj)
@@ -144,6 +158,55 @@
         window.location.href="NeteaseSameAlbumSongList.html";
     }
 
+    function NeteaseGetListInfo(obj)
+    {
+        element=obj.parentNode;
+        musicid=element.childNodes[1].textContent;
+        console.log(musicid);
+        singerid=element.childNodes[2].textContent;
+        songname=element.childNodes[0].textContent;
+        albumname=element.childNodes[3].textContent;
+        window.localStorage.setItem("musicidkey",musicid);
+        window.localStorage.setItem("singeridkey",singerid);
+        window.localStorage.setItem("songnamekey",songname);
+        window.localStorage.setItem("artistnamekey",singername);
+        window.localStorage.setItem("albumnamekey",albumname);
+        NeteaseAddSongToList(this);
+    }
+
+    function NeteaseAddSongToList(obj)
+    {
+        var value="Bearer "+window.localStorage.getItem("Tokenkey");
+        var musiclistID=obj.window.localStorage.getItem("neteaselistidkey");
+        console.log(musiclistID);
+        var musicid=obj.window.localStorage.getItem("musicidkey");
+        var singerid=obj.window.localStorage.getItem("singeridkey");
+        var songname=obj.window.localStorage.getItem("songnamekey");
+        var singername=obj.window.localStorage.getItem("artistnamekey");
+        var albumname=obj.window.localStorage.getItem("albumnamekey");
+        console.log(value);
+        $.ajax({
+            type:'POST',
+            url:'http://129.204.223.158/backend/music/playlist/addsong?playlistid='+musiclistID,
+            contentType:"application/json",
+            dataType:'json',
+            data:JSON.stringify({
+                Musicid :musicid ,
+                Platform : "netease",
+                Singerid : singerid,
+                Singername :singername ,
+                Name:songname,
+                Albumname:albumname,
+            }),
+            beforeSend : function(request) {
+                request.setRequestHeader("Authorization",value);
+            },//JWT请求头
+            success:function(data)
+            {
+                console.log(data);
+            }
+        })
+    }
 </script>
 </body>
 </html>

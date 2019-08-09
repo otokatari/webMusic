@@ -60,6 +60,14 @@
     span{
     font-size:20px;
     }
+    .top{
+        width:90%;
+        height:10%;
+    }
+    h2{
+        margin:0 auto;
+        text-align: center;
+    }
     </style>
 
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
@@ -68,14 +76,19 @@
 </head>
 
 <body>
+<div class="top">
+    <h2 class="albumnametitle"></h2>
+</div>
 <div class="li"></div>
+
 <script>
     window.onload=function () {
         show();
     }
 
+    var albumname=window.localStorage.getItem("QQmusicalbumnamekey");
     function show() {
-        var albumname=window.localStorage.getItem("QQmusicalbumnamekey");
+        $('.albumnametitle').html(albumname);
         $.ajax({
             type: 'get',
             url: 'http://129.204.223.158/qqmusic/search?query=' + albumname + '&page=1&zhida=false&perpage=20', //请求数据的地址
@@ -105,11 +118,11 @@
                             data += '<div class="li">' +
                                 '<ul class="songlist_items_total">' +
                                 '<li class="songlist_items">' +
-                                '<span id="song_name" class="song_name"> ' + '<a id="name" href="audio.html" style="text-decoration: none;"> ' + songname + '</a> ' + '</span>' +
-                                '<span id="MusicID" class="MusicID" style="visibility: hidden"> ' + songmid + '</span>' +
-                                '<span id="SingerID" class="SingerID" style="visibility: hidden"> ' + singerID + '</span>' +
-                                '<span class="artist_name"> ' +'<a onclick="QQmusicGetSingerList(this)" style="text-decoration: none;"> '+artist_name+'</a>'+ '</span>' +
-                                '<span id="platform_name" class="platform_name">' + 'QQ音乐' + '</span>' +
+                                '<span id="song_name" class="song_name"> ' + '<a id="name" onclick="QQmusicGetInfo(this)" style="text-decoration: none; color:black"> '+songname+'</a> ' + '</span>' +
+                                '<span id="MusicID" class="MusicID" style="visibility: hidden">'+songmid+'</span>' +
+                                '<span id="SingerID" class="SingerID" style="visibility: hidden">'+singerID+'</span>' +
+                                '<span class="artist_name"> ' +'<a onclick="QQmusicGetSingerList(this)" style="text-decoration: none; color:lightskyblue"> '+artist_name+'</a>'+ '</span>' +
+                                '<span id="platform_name" class="platform_name">'+'<a style="text-decoration: none; color:grey">'+'QQ音乐'+'</a>'+'</span>'+
                                 '<input id="button" class="btn btn-primary" type="button" value="添加到歌单" onclick="QQmusicGetListInfo(this)">' +
                                 '</li>' +
                                 '<br/>' + '</ul>' + '</div>';
@@ -129,6 +142,68 @@
         window.location.href="QQmusicSameSingerList.html";
     }
 
+    function QQmusicGetInfo(obj)
+    {
+        qqmusicparentelement=obj.parentNode.parentNode;
+        qqmusicsongmid=qqmusicparentelement.childNodes[1].textContent;
+        qqmusicsongnametitle=qqmusicparentelement.childNodes[0].textContent;
+        qqmusicartistnametitle=qqmusicparentelement.childNodes[3].textContent;
+        window.localStorage.setItem("qqmusicsongmidkey",qqmusicsongmid);
+        window.localStorage.setItem("qqmusicsongnametitlekey",qqmusicsongnametitle);
+        window.localStorage.setItem("qqmusicartistnametitlekey",qqmusicartistnametitle);
+        window.localStorage.setItem("qqmusicalbumnametitlekey",albumname);
+        window.location.href="QQmusicaudio.html";
+    }
+
+
+    function QQmusicGetListInfo(obj)
+    {
+        element7=obj.parentNode;
+        qqmusicid=element7.childNodes[1].textContent;
+        qqsingerid=element7.childNodes[2].textContent;
+        qqsongname=element7.childNodes[0].textContent;
+        qqartistname=element7.childNodes[3].textContent;
+        window.localStorage.setItem("qqmusicidkey",qqmusicid);
+        window.localStorage.setItem("qqsingeridkey",qqsingerid);
+        window.localStorage.setItem("qqsongnamekey",qqsongname);
+        window.localStorage.setItem("qqartistnamekey",qqartistname);
+        window.localStorage.setItem("qqalbumnamekey",albumname);
+        QQmusicAddSongToList(this);
+    }
+
+    function QQmusicAddSongToList(obj)
+    {
+        var value="Bearer "+window.localStorage.getItem("Tokenkey");
+        var musiclistID=obj.window.localStorage.getItem("QQmusiclistidkey");
+        console.log(musiclistID);
+        var qqmusicid=obj.window.localStorage.getItem("qqmusicidkey");
+        var qqsingerid=obj.window.localStorage.getItem("qqsingeridkey");
+        var qqsongname=obj.window.localStorage.getItem("qqsongnamekey");
+        var qqsingername=obj.window.localStorage.getItem("qqartistnamekey");
+        var qqalbumname=obj.window.localStorage.getItem("qqalbumnamekey");
+        console.log(value);
+        $.ajax({
+            type:'POST',
+            url:'http://129.204.223.158/backend/music/playlist/addsong?playlistid='+musiclistID,
+            contentType:"application/json",
+            dataType:'json',
+            data:JSON.stringify({
+                Musicid :qqmusicid ,
+                Platform :"qqmusic",
+                Singerid :qqsingerid,
+                Singername :qqsingername ,
+                Name:qqsongname,
+                Albumname:qqalbumname,
+            }),
+            beforeSend : function(request) {
+                request.setRequestHeader("Authorization",value);
+            },//JWT请求头
+            success:function(data)
+            {
+                console.log(data);
+            }
+        })
+    }
 </script>
 </body>
 </html>

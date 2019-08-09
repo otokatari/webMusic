@@ -4,6 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <title>我的音乐</title>
+    <style>
+        .li{
+            width:90%;
+            margin:0 auto;
+        }
+        #topper{
+            width:90%;
+            margin:0 auto;
+        }
+        .songlist_header_album,
+        .songlist_header_author,
+        .songlist_header_name,
+        {
+            display:inline-block;
+        }
+        .songlist_header,.songlist_items_total{
+            padding-left:20px;
+            padding-right:120px;
+        }
+        .songlist_header{
+            height:40px;
+            line-height:40px;
+            color:#999;
+            background-color: rgba(0,0,0,0.03);
+        }
+        .songlist_header_name,.song_name{
+            float:left;
+            width:30%;
+            position:relative;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+       .songlist_header_album,.songlist_header_author,.album_name,.artist_name,.platform,.platform_name,.operation,.musicid,.id{
+            float:left;
+            box-sizing: border-box;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .songlist_header_album,.album_name{
+            width:32%;
+        }
+        .songlist_header_author,.artist_name{
+            width:15%;
+        }
+        .platform,.platform_name{
+            width:10%;
+        }
+        .operation{
+            width:10%;
+        }
+        .songlist_items {
+            list-style: none;
+        }
+        .musicid,.id {
+            width:3%;
+        }
+        span{
+            font-size:20px;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -12,10 +74,23 @@
 <body>
 
 <p id="passage"></p>
+<input type="button" class="btn btn-primary" value="添加音乐到歌单" onclick="addMusicToList()">
+
+<div class="li"></div>
    <script>
+
        window.onload=function()
        {
            showListName();
+           showSongList();
+       }
+
+       var playlistid=window.localStorage.getItem("playlistidkey");
+
+       function addMusicToList()
+       {
+           var musiclistID=window.localStorage.setItem("musiclistIDkey",playlistid);
+           window.location.href="MainPage.html";
        }
 
        function showListName()
@@ -26,9 +101,163 @@
 
        function showSongList()
        {
+            var data='';
+             data+= '<div id="topper">'+
+                '<ul class="songlist_header">'+
+                '<li class="songlist_header_name">'+'歌曲'+'</li>'+
+                '<li class="songlist_header_author">'+'歌手'+'</li>'+
+                 '<li class="musicid" style="visibility:hidden">'+'ID'+'</li>'+
+                '<li class="songlist_header_album">'+'专辑'+'</li>'+
+                '<li class="platform">'+'平台'+'</li>'+ '<li class="operation">'+'操作'+'</li>'+
+                '</ul>'+
+                '</div>';
 
+             var songs=window.localStorage.getItem("strsongslistkey");
+             var Songs=JSON.parse(songs);
+             console.log(typeof (Songs));
+             console.log(Songs);
+             $.each(Songs,function(index)
+             {
+                 var name=Songs[index].Name;
+                 var platform=Songs[index].Platform;
+                 var singername=Songs[index].Singername;
+                 var albumname=Songs[index].Albumname;
+                 var musicid=Songs[index].Musicid;
+                 console.log(name);
+                 console.log(platform);
+                 console.log(singername);
+                 console.log(albumname);
+                 console.log(musicid);
+                 data += '<div class="li">'+
+                     '<ul class="songlist_items_total">' +
+                     '<li class="songlist_items">'+
+                     '<span id="song_name" class="song_name">'+'<a onclick="GetSongnameInfo(this)" style="text-decoration: none; color:black;">'+name+'</a>'+'</span>'+
+                     '<span id="artist_name" class="artist_name">' +'<a onclick="GetSingerInfo(this)" style="text-decoration: none; color:lightskyblue;">'+singername+'</a>'+'</span>'+
+                     '<span id="id" class="id" style="visibility: hidden">'+musicid+'</span>'+
+                     '<span id="album_name" class="album_name">'+'<a onclick="GetAlbumInfo(this)" style="text-decoration: none; color:black;">'+albumname+'</a>'+'</span>'+
+                     '<span id="platform_name" class="platform_name">' +'<a style="text-decoration: none; color:grey;">'+platform+'</a>'+'</span>'+
+                     '<input type="button" class="btn btn-primary" value="删除" onclick="del(this)">'+
+                     '</li>'+
+                     '</ul>'+'</div>'
+             })
+           $(".li").html(data);
        }
 
+        function del(obj)
+        {
+            element=obj.parentNode;
+            MusicID=element.childNodes[2].textContent;
+            console.log(MusicID);
+            window.localStorage.setItem("MusicIDkey",MusicID);
+            parentelement=element.parentNode;
+            parentelement.removeChild(element);
+            deleteSongFromList(this);
+        }
+
+       function deleteSongFromList(obj)
+       {
+           var value="Bearer "+window.localStorage.getItem("Tokenkey");
+            var musicID=obj.window.localStorage.getItem("MusicIDkey");
+           console.log(value);
+           $.ajax({
+               type:'GET',
+               url:'http://129.204.223.158/backend/music/playlist/deletesong?playlistid='+playlistid+'&musicid='+musicID,
+               contentType:"application/json",
+               dataType:'json',
+               beforeSend : function(request) {
+                   request.setRequestHeader("Authorization",value);
+               },//JWT请求头
+               success:function(data)
+               {
+                   console.log(data);
+               }
+           })
+       }
+
+       function GetSongnameInfo(obj)
+       {
+             lielemt=obj.parentNode.parentNode;
+             mymusicsongname=lielemt.childNodes[0].textContent;
+             mymusicartistname=lielemt.childNodes[1].textContent;
+             mymusicid=lielemt.childNodes[2].textContent;
+             mymusicalbumname=lielemt.childNodes[3].textContent;
+             mymusicplatformname=lielemt.childNodes[4].textContent;
+             if(mymusicplatformname==="netease")
+             {
+                 window.localStorage.setItem("neteasesongnametitlekey",mymusicsongname);
+                 window.localStorage.setItem("neteaseartistnametitlekey",mymusicartistname);
+                 window.localStorage.setItem("neteasealbumnametitlekey",mymusicalbumname);
+                 window.localStorage.setItem("test10key",mymusicid);
+                 window.location.href="Neteaseaudio.html";
+             }
+             else if(mymusicplatformname==="qqmusic")
+             {
+                 window.localStorage.setItem("qqmusicsongnametitlekey",mymusicsongname);
+                 window.localStorage.setItem("qqmusicartistnametitlekey",mymusicartistname);
+                 window.localStorage.setItem("qqmusicalbumnametitlekey",mymusicalbumname);
+                 window.localStorage.setItem("qqmusicsongmidkey",mymusicid);
+                 window.location.href="QQmusicaudio.html";
+             }
+             else
+             {
+                window.localStorage.setItem("kugousongnametitlekey",mymusicsongname);
+                window.localStorage.setItem("kugouartistnametitlekey",mymusicartistname);
+                window.localStorage.setItem("kugoualbumnametitlekey",mymusicalbumname);
+                window.localStorage.setItem("filehashkey",mymusicid);
+                window.location.href="Kugouaudio.html";
+             }
+       }
+
+       function GetSingerInfo(obj)
+       {
+           lielemt2=obj.parentNode.parentNode;
+           my_singername=lielemt2.childNodes[1].textContent;
+           my_platformname=lielemt2.childNodes[4].textContent;
+           if(my_platformname==="netease")
+           {
+               window.localStorage.setItem("singernamekey2",my_singername);
+               window.localStorage.setItem("neteaselistidkey",playlistid);
+               window.location.href="NeteaseSameSingerList.html";
+           }
+           else if(my_platformname==="qqmusic")
+           {
+               window.localStorage.setItem("QQmusicsingernamekey",my_singername);
+               window.localStorage.setItem("QQmusiclistidkey",playlistid);
+               window.location.href="QQmusicSameSingerList.html";
+           }
+           else
+           {
+                window.localStorage.setItem("kugousingernamekey",my_singername);
+                window.localStorage.setItem("kugoulistidkey",playlistid);
+                window.localStorage.href="KugouSameSingerList.html";
+           }
+       }
+
+        function GetAlbumInfo(obj)
+        {
+            lielemt3=obj.parentNode.parentNode;
+            my_albumname=lielemt3.childNodes[1].textContent;
+            my_platform=lielemt3.childNodes[4].textContent;
+            console.log(my_platform);
+            if(my_platform==="netease")
+            {
+                window.localStorage.setItem("albumnamekey2",my_albumname);
+                window.localStorage.setItem("neteaselistidkey",playlistid)
+                window.location.href="NeteaseSameAlbumSongList.html";
+            }
+            else if(my_platform==="qqmusic")
+            {
+                window.localStorage.setItem("QQmusicalbumnamekey",my_albumname);
+                window.localStorage.setItem("QQmusiclistidkey",playlistid);
+                window.location.href="QQmusicSameAlbumList.html";
+            }
+            else
+            {
+                window.localStorage.setItem("kugoualbumnamekey",my_albumname);
+                window.localStorage.setItem("kugoulistidkey",playlistid);
+                window.location.href="KugouSameAlbumList.html";
+            }
+        }
    </script>
 </body>
 </html>
