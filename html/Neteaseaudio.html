@@ -131,8 +131,10 @@
 
             $.each(medises, function (i, item) {    // 遍历medises，并且将时间和文字拆分开，并push进自己定义的数组，形成一个对象数组
                 var t = item.substring(item.indexOf("[") + 1, item.indexOf("]"));
+                let timeSecond = parseFloat(t.split(":")[1]);
+                if(isNaN(timeSecond)) return ;
                 medisArray.push({
-                    t: (t.split(":")[0] * 60 + parseFloat(t.split(":")[1])).toFixed(3),
+                    t: (t.split(":")[0] * 60 + timeSecond).toFixed(3),
                     c: item.substring(item.indexOf("]") + 1, item.length)
                 });
             });
