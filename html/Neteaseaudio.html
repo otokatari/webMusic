@@ -20,11 +20,18 @@
             overflow-y: scroll;
             padding-right: 20px;
             height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         #lyricscrollbox {
             float: right;
-            height: 100vh;
+            height: 500px;
             overflow:hidden;
+            position: relative;
+        }
+        #text {
+            overflow: hidden;
+            height: 100%;
             position: relative;
         }
         h1,
@@ -59,7 +66,7 @@
             <h1 id="songnametitle"></h1>
             <h4 id="artistnametitle"></h4>
             <h4 id="albumnametitle"></h4>
-            <ul id="text" style="overflow: hidden;">
+            <ul id="text">
             </ul>
         </div>
     </div>
@@ -116,6 +123,8 @@
 
         var audio = document.getElementsByTagName("audio")[0];
         var medisArray = new Array();   // 定义一个新的数组
+
+
         function createLrc() {
             var medis = document.getElementById('lrc_content').innerText;
             var medises = medis.split("\n");    // 用换行符拆分获取到的歌词
@@ -140,7 +149,8 @@
             const findLineHeight = (begin) => {
                 let currTime = audio.currentTime.toFixed(3);
                 for (let i = begin; i < medisArray.length; ++i) {
-                    if (i == medisArray.length - 1 && currTime >= parseFloat(medisArray[i].t)) {
+                    if(currTime <= parseFloat(medisArray[0].t)) return 0;
+                    else if (i == medisArray.length - 1 && currTime >= parseFloat(medisArray[i].t)) {
                         return i;
                     }
                     else if (parseFloat(medisArray[i].t) <= currTime && currTime <= parseFloat(medisArray[i + 1].t)) {
@@ -162,6 +172,11 @@
             };
         }
 
+        function CanLineHeight(line) {
+            let currTime = audio.currentTime.toFixed(3);
+            return  parseFloat(medisArray[line].t) <= currTime;
+        }
+
         function removeLineHeight(lineNo) {
             var ul = $("#text");
             if (lineNo > 0) {
@@ -171,16 +186,15 @@
                 ul.children().removeClass("lineheight");
             }
         }
-
+        
         function lineHeight(lineno) {
             var fraction = 0.5;
-            var topNum = 0;
             var ul = $("#text");
             var $ul = document.getElementById('text');
 
-            removeLineHeight(topNum + lineno - 1);
-            var nowline = ul.find("li").get(topNum + lineno);
-            $(nowline).addClass("lineheight");
+            removeLineHeight(lineno - 1);
+            var nowline = ul.find("li").get(lineno >= 0 ? lineno : 0);
+            if(CanLineHeight(lineno)) $(nowline).addClass("lineheight");
 
             // 实现文字滚动
             var _scrollTop;
