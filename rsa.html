@@ -6,15 +6,15 @@
         <script lang="javascript" type="text/javascript" src="./rsa/jsencrypt.min.js"></script>
         <script>
             function DoEncrypt(){
-                let pubKey = document.getElementById("PublicKey").value;
-                let message = document.getElementById("Message").value;
+                let pubKey = document.getElementById("PublicKey").value; // Load public key file.
+                let message = document.getElementById("Message").value; // Message for encrypt.
                 let pkcs8Key = KEYUTIL.getKey(pubKey);
                 let encryptor = new JSEncrypt();
                 encryptor.setPublicKey(pkcs8Key);
                 let encrypted = encryptor.encrypt(message);
                 let p = document.createElement("p");
                 p.innerText = encrypted;
-                document.body.appendChild(p);
+                document.body.appendChild(p); // Encrypted result.
             }
         </script>
     </head>
