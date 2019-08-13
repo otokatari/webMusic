@@ -8,25 +8,40 @@
     <script type="text/javascript"  src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
     <style>
-        .lineheight{
-            color:lightskyblue;
+        .lineheight {
+            color: lightcoral;
         }
-        .lyric{
-            float:right;
-            margin-right:8%;
+        .lyric {
+            float: right;
+            margin-right: -16px;
+            overflow-y: scroll;
+            padding-right: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
-        h1,h4{
+        #lyricscrollbox {
+            float: right;
+            height: 500px;
+            overflow:hidden;
+            position: relative;
+        }
+        #text {
+            overflow: hidden;
+            height: 100%;
+            position: relative;
+        }
+        h1, h4 {
             text-align: center;
-            color:blue;
+            color: blue;
             text-shadow: 0 0 0.2em #87F
         }
-        li{
+        li {
+            font-size: 18px;
             line-height: 40px;
-            font-size:18px;
             text-shadow: 0 0 0.2em #87F;
         }
     </style>
-
 </head>
 <body>
 
@@ -38,12 +53,14 @@
 <textarea id="lrc_content" name="textfield" cols="70" rows="10" style="display:none;">
 </textarea>
 
-<div class="lyric">
-<ul id="text" style="overflow: hidden;">
-    <h1 id="songnametitle"></h1>
-    <h4 id="artistnametitle"></h4>
-    <h4 id="albumnametitle"></h4>
-</ul>
+<div id="lyricscrollbox">
+    <div class="lyric">
+        <h1 id="songnametitle"></h1>
+        <h4 id="artistnametitle"></h4>
+        <h4 id="albumnametitle"></h4>
+        <ul id="text">
+        </ul>
+    </div>
 </div>
 
 <script>
@@ -80,7 +97,6 @@
     var value="Bearer "+window.localStorage.getItem("Tokenkey");
     function audioplay()
     {
-
         var audio = document.getElementsByTagName("audio")[0];
         console.log(filehash);
         $.ajax({
@@ -97,79 +113,135 @@
     }
 
     var audio = document.getElementsByTagName("audio")[0];
-    var medisArray = new Array();   // 定义一个新的数组
-    function createLrc () {
+    var medisArray=new Array();
+    var oLRC = {
+        ti: "", //歌曲名
+        ar: "", //演唱者
+        al: "", //专辑名
+        by: "", //歌词制作人
+        offset: 0, //时间补偿值，单位毫秒，用于调整歌词整体位置
+    }
+
+    function createLrc() {
         var medis = document.getElementById('lrc_content').innerText;
         var medises = medis.split("\n");    // 用换行符拆分获取到的歌词
-
-        $.each(medises, function (i, item) {    // 遍历medises，并且将时间和文字拆分开，并push进自己定义的数组，形成一个对象数组
-            var t = item.substring(item.indexOf("[") + 1, item.indexOf("]"));
-            medisArray.push({
-                t: (t.split(":")[0] * 60 + parseFloat(t.split(":")[1])).toFixed(3),
-                c: item.substring(item.indexOf("]") + 1, item.length)
-            });
-        });
+        for (var i in medises) {    // 遍历medises，并且将时间和文字拆分开，并push进自己定义的数组，形成一个对象数组
+            var t = medises[i].substring(medises[i].indexOf("[") + 1, medises[i].indexOf("]"));
+            let s = t.split(":");
+            if (isNaN(parseFloat(s[0]))) {
+                for (var j in oLRC) {
+                    if (j != "medisArray" && j == s[0].toLowerCase()) {
+                        oLRC[j] = s[1];
+                    }
+                }
+            } else {
+                medisArray.push({
+                    t: (parseFloat(s[0]) * 60 + parseFloat(s[1])).toFixed(3),
+                    c: medises[i].substring(medises[i].indexOf("]") + 1, medises[i].length)
+                });
+            }
+        }
         var ul = $("#text");
         // 遍历medisArray，并且生成li标签，将数组内的文字放入li标签
         $.each(medisArray, function (i, item) {
-            var li = $("<li style='list-style: none;text-align: center'>");
+            var li = $("<li style='list-style: none; text-align: center'>");
             li.html(item.c);
             ul.append(li);
         });
-
-        var lineNo =0;
-        audio.ontimeupdate = function () {
-            if (lineNo == medisArray.length - 1 && audio.currentTime.toFixed(3) >= parseFloat(medisArray[lineNo].t)) {
-                lineHeight(lineNo);
+        var lineNo = 0;
+        const findLineHeight = (begin) => {
+            let currTime = audio.currentTime.toFixed(3);
+            for (let i = begin; i < medisArray.length; ++i) {
+                if (currTime <= parseFloat(medisArray[0].t)) return 0;
+                else if (i == medisArray.length - 1 && currTime >= parseFloat(medisArray[i].t)) {
+                    return i;
+                } else if (parseFloat(medisArray[i].t) <= currTime && currTime <= parseFloat(medisArray[i + 1].t)) {
+                    return i;
+                }
             }
-            if (parseFloat(medisArray[lineNo].t) <= audio.currentTime.toFixed(3) &&
-                audio.currentTime.toFixed(3) <= parseFloat(medisArray[lineNo + 1].t)) {
-                lineHeight(lineNo);
-                lineNo++;
-            }
+            return -1;
         };
+
+        audio.ontimeupdate = function () {
+            let line = findLineHeight(lineNo);
+            if (line == -1) {
+                removeLineHeight();
+                line = findLineHeight(0);
+            }
+            lineNo = line;
+            lineHeight(lineNo);
+            lineNo++;
+        }
     }
 
-    function lineHeight(lineno)
-    {
+    function CanLineHeight(line) {
+        let currTime = audio.currentTime.toFixed(3);
+        return  parseFloat(medisArray[line].t) <= currTime;
+    }
+
+    function removeLineHeight(lineNo) {
+        var ul = $("#text");
+        if (lineNo > 0) {
+            $(ul.find("li").get(lineNo)).removeClass("lineheight");
+        }
+        else {
+            ul.children().removeClass("lineheight");
+        }
+    }
+
+    function lineHeight(lineno) {
         var fraction = 0.5;
-        var topNum = 0;
         var ul = $("#text");
         var $ul = document.getElementById('text');
-        // 令正在唱的那一行高亮显示
-        if (lineno > 0) {
-            $(ul.find("li").get(topNum + lineno - 1)).removeClass("lineheight");
-        }
-        var nowline = ul.find("li").get(topNum + lineno);
-        $(nowline).addClass("lineheight");
-
+        removeLineHeight(lineno - 1);
+        var nowline = ul.find("li").get(lineno >= 0 ? lineno : 0);
+        if(CanLineHeight(lineno)) $(nowline).addClass("lineheight");
         // 实现文字滚动
-        var _scrollTop;
-        $ul.scrollTop = 0;
-        if ($ul.clientHeight * fraction > nowline.offsetTop) {
-            _scrollTop = 0;
-        } else if (nowline.offsetTop > ($ul.scrollHeight - $ul.clientHeight * (1 - fraction))) {
-            _scrollTop = $ul.scrollHeight - $ul.clientHeight;
-        } else {
-            _scrollTop = nowline.offsetTop - $ul.clientHeight * fraction;
-        }
 
+        var _scrollTop;
+
+        $ul.scrollTop = 0;
+
+        if ($ul.clientHeight * fraction > nowline.offsetTop) {
+
+            _scrollTop = 0;
+
+        } else if (nowline.offsetTop > ($ul.scrollHeight - $ul.clientHeight * (1 - fraction))) {
+
+            _scrollTop = $ul.scrollHeight - $ul.clientHeight;
+
+        } else {
+
+            _scrollTop = nowline.offsetTop - $ul.clientHeight * fraction;
+
+        }
         //以下声明歌词高亮行固定的基准线位置成为 “A”
+
         if ((nowline.offsetTop - $ul.scrollTop) >= $ul.clientHeight * fraction) {
+
             //如果高亮显示的歌词在A下面，那就将滚动条向下滚动，滚动距离为 当前高亮行距离顶部的距离-滚动条已经卷起的高度-A到可视窗口的距离
+
             $ul.scrollTop += Math.ceil(nowline.offsetTop - $ul.scrollTop - $ul.clientHeight * fraction);
 
+
+
         } else if ((nowline.offsetTop - $ul.scrollTop) < $ul.clientHeight * fraction && _scrollTop != 0) {
+
             //如果高亮显示的歌词在A上面，那就将滚动条向上滚动，滚动距离为 A到可视窗口的距离-当前高亮行距离顶部的距离-滚动条已经卷起的高度
+
             $ul.scrollTop -= Math.ceil($ul.clientHeight * fraction - (nowline.offsetTop - $ul.scrollTop));
 
         } else if (_scrollTop == 0) {
-            $ul.scrollTop = 0;
-        } else {
-            $ul.scrollTop += $(ul.find('li').get(0)).height();
-        }
-    }
 
+            $ul.scrollTop = 0;
+
+        } else {
+
+            $ul.scrollTop += $(ul.find('li').get(0)).height();
+
+        }
+
+    }
     function ReportBehaviour()
     {
    $.ajax({

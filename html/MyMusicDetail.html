@@ -6,12 +6,12 @@
     <title>我的音乐</title>
     <style>
         .li{
-            width:90%;
-            margin:0 auto;
+            width:80%;
+            float:left;
         }
         #topper{
-            width:90%;
-            margin:0 auto;
+            width:80%;
+            float:left;
         }
         .songlist_header_album,
         .songlist_header_author,
@@ -31,7 +31,7 @@
         }
         .songlist_header_name,.song_name{
             float:left;
-            width:30%;
+            width:20%;
             position:relative;
             white-space:nowrap;
             overflow:hidden;
@@ -45,16 +45,16 @@
             text-overflow:ellipsis;
         }
         .songlist_header_album,.album_name{
-            width:32%;
+            width:30%;
         }
         .songlist_header_author,.artist_name{
-            width:15%;
+            width:10%;
         }
         .platform,.platform_name{
-            width:10%;
+            width:12%;
         }
         .operation{
-            width:10%;
+            width:5%;
         }
         .songlist_items {
             list-style: none;
@@ -65,6 +65,21 @@
         span{
             font-size:20px;
         }
+        h1{
+            margin:0 auto;
+            text-align: center;
+        }
+        #topbtn{
+            float:right;
+        }
+        hr{
+            width: 100%;
+            margin: 0 auto;
+            border: none;
+            height: 1px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
     </style>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
@@ -72,11 +87,18 @@
 </head>
 
 <body>
+<div class="top">
+    <h1 class="listnametitle"></h1>
+    <input id="topbtn" type="button" class="btn btn-primary" value="添加音乐到歌单" onclick="addMusicToList()">
+    <hr/>
+</div>
 
-<p id="passage"></p>
-<input type="button" class="btn btn-primary" value="添加音乐到歌单" onclick="addMusicToList()">
+<audio controls preload="auto" autoplay loop="loop">
+    <source id="source">
+</audio>
 
-<div class="li"></div>
+<div class="li">
+</div>
    <script>
 
        window.onload=function()
@@ -96,7 +118,7 @@
        function showListName()
        {
            var listname=window.localStorage.getItem("listnametextkey");
-           $("#passage").text(listname);
+           $(".listnametitle").html(listname);
        }
 
        function showSongList()
@@ -114,8 +136,6 @@
 
              var songs=window.localStorage.getItem("strsongslistkey");
              var Songs=JSON.parse(songs);
-             console.log(typeof (Songs));
-             console.log(Songs);
              $.each(Songs,function(index)
              {
                  var name=Songs[index].Name;
@@ -123,11 +143,6 @@
                  var singername=Songs[index].Singername;
                  var albumname=Songs[index].Albumname;
                  var musicid=Songs[index].Musicid;
-                 console.log(name);
-                 console.log(platform);
-                 console.log(singername);
-                 console.log(albumname);
-                 console.log(musicid);
                  data += '<div class="li">'+
                      '<ul class="songlist_items_total">' +
                      '<li class="songlist_items">'+
@@ -136,11 +151,69 @@
                      '<span id="id" class="id" style="visibility: hidden">'+musicid+'</span>'+
                      '<span id="album_name" class="album_name">'+'<a onclick="GetAlbumInfo(this)" style="text-decoration: none; color:black;">'+albumname+'</a>'+'</span>'+
                      '<span id="platform_name" class="platform_name">' +'<a style="text-decoration: none; color:grey;">'+platform+'</a>'+'</span>'+
-                     '<input type="button" class="btn btn-primary" value="删除" onclick="del(this)">'+
-                     '</li>'+
-                     '</ul>'+'</div>'
+                     '<input type="button" class="btn btn-primary" value="删除" onclick="del(this)">'+'&nbsp;'+
+                     '<input type="button" class="btn btn-primary" value="播放" onclick="audioplay(this)">'+
+                     '<hr/>'+'</li>'+ '</ul>'+'</div>'
              })
            $(".li").html(data);
+       }
+
+       var audio = document.getElementsByTagName("audio")[0];
+       function audioplay(obj)
+       {
+           elemt=obj.parentNode;
+           audiomusicID=elemt.childNodes[2].textContent;
+           window.localStorage.setItem("audiomusicidkey",audiomusicID);
+           audioplatform=elemt.childNodes[4].textContent;
+           if(audioplatform==="netease")
+           {
+               $.ajax({
+                   type: 'GET',
+                   url: 'http://129.204.223.158/netease/song/url?id=' +audiomusicID,
+                   async: false,
+                   success: function (data1) {
+                       var json = data1.data;
+                       $.each(json, function (index) {
+                           var URL = json[index].url;
+                           document.getElementById("source").src = URL;
+                           audio.setAttribute("src", URL);
+                           audio.load();
+                       })
+                   }
+               })
+           }
+           else if(audioplatform==="kugou")
+           {
+               $.ajax({
+                   type: 'GET',
+                   url: 'http://129.204.223.158/kugou/songurl?hash='+audiomusicID,
+                   async: false,
+                   success: function (data1) {
+                       var URL = data1.data.play_url;
+                       document.getElementById("source").src = URL;
+                       audio.setAttribute("src",URL);
+                       audio.load();
+                   }
+               })
+           }
+           else
+           {
+               $.ajax({
+                   type: 'GET',
+                   url: 'http://129.204.223.158/qqmusic/song/vkey?songmid=' +audiomusicID,
+                   async: false,
+                   success: function (data2) {
+                       var json2 = data2.data.items;
+                       $.each(json2, function (index) {
+                           var vkey = json2[index].vkey;
+                           var URL = 'http://isure.stream.qqmusic.qq.com/C400'+audiomusicID+'.m4a?guid=5448538077&vkey='+vkey+'&uin=0&fromtag=66';
+                           document.getElementById("source").src = URL;
+                           audio.setAttribute("src",URL);
+                           audio.load();
+                       })
+                   }
+               })
+           }
        }
 
         function del(obj)

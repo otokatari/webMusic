@@ -64,22 +64,31 @@
             color:#999;
             background-color: rgba(0,0,0,0.03);
         }
+        span{
+            font-size:20px;
+        }
+        hr{
+            width:100%;
+            margin:0 auto;
+            border:none;
+            height: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 
-
 <body>
 <div class="total">
-
     <div class="main">
-
         <div class="image">
             <img src="../image/Otokatari-Icon.png">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+            + 新建歌单
+        </button>
         </div>
 
         <br/>
-        <input id="ListName" class="form-control" type="text" placeholder="输入想要创建的歌单名称">
-        <button class="btn btn-primary" onclick="createSongList()"> + 新建歌单</button>
     </div>
     <br/>
     <br/>
@@ -90,6 +99,36 @@
     </div>
 
 </div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    请输入歌单名
+                </h4>
+            </div>
+            <div class="modal-body">
+                <input id="ListName" class="form-control" type="text" placeholder="输入想要创建的歌单名称">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+                <button type="button" class="btn btn-primary" onclick="createSongList()">
+                    确认
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script>
+    $(function () { $('#myModal').modal('hide')});
+</script>
 
     <script>
 
@@ -114,7 +153,6 @@
              success:function(data)
              {
                  var list='';
-                 console.log(data);
                  list+= '<ul class="listheader">'+'<li class="listtotal">'+
                      '<span class="list">'+'歌单'+'</span>'+
                      '<span class="id" style="visibility: hidden">'+'ID'+'</span>'+
@@ -122,7 +160,6 @@
                      '<span class="amount">'+'曲目数'+'</span>'+
                      '<span class="operation">'+'操作'+'</span>'+
                      '</li>'+'</ul>';
-
                  $.each(data,function(index)
                  {
                      var listname=data[index].Name;
@@ -133,9 +170,9 @@
                              '<span style="visibility: hidden" class="song">'+str_songs+'</span>'+
                              '<span style="visibility: hidden" class="listid">' +'<a>'+listid+'</a>'+ '</span>' +
                              '<span class="songsamount">'+'<p style="color:black">'+songs.length+'首'+'</p>'+'</span>'+
-                             '<input id="button" type="button" class="btn btn-primary" value="删除" onclick="del(this)">' + '</li>' + '</ul>'
+                             '<input id="button" type="button" class="btn btn-primary" value="删除" onclick="del(this)">'+'<hr/>'+'</li>'+'</ul>'
                  })
-                 $('.songlistitems').html(list);
+                 $('.songlistitems').append(list);
              }
          })
      }
@@ -175,8 +212,9 @@
                             '<span style="visibility: hidden" class="song">'+'str_songs'+'</span>'+
                             '<span style="visibility: hidden" class="listid">' +'<a>'+playlistid+'</a>'+ '</span>' +
                             '<span class="songsamount">'+'<p>'+'0首'+'</p>'+'</span>'+
-                            '<input id="button" type="button" class="btn btn-primary" value="删除" onclick="del(this)">' + '</li>' + '</ul>'
+                            '<input id="button" type="button" class="btn btn-primary" value="删除" onclick="del(this)">' +'<hr>'+'</li>'+'</ul>'
                         $('.songlistitems').append(list);
+                        $(function () { $('#myModal').modal('hide')});//隐藏模态框
                     },
                     error:function(error)
                     {
