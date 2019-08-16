@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title class="title">QQ音乐搜索</title>
     <style>
     .li{
     width:90%;
@@ -77,6 +77,9 @@
 
 <body>
 <div class="top">
+    <img src="../image/Otokatari-Icon.png">
+    <a class="back" href="MainPage.html" style="text-decoration: none; font-size:20px;">回到主页</a>
+    <hr>
     <h2 class="albumnametitle"></h2>
 </div>
 <div class="li"></div>
@@ -88,6 +91,7 @@
 
     var albumname=window.localStorage.getItem("QQmusicalbumnamekey");
     function show() {
+        $('.title').text(albumname);
         $('.albumnametitle').html(albumname);
         $.ajax({
             type: 'get',

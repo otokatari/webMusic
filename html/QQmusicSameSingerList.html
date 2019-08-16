@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title class="title">QQ音乐搜索</title>
     <style>
         .li{
             width:90%;
@@ -19,7 +19,7 @@
         }
         .songlist_header,.songlist_items_total{
             padding-left:20px;
-            padding-right: 120px;
+            padding-right:120px;
         }
         .songlist_header{
             height:55px;
@@ -77,6 +77,9 @@
 
 <body>
 <div class="top">
+    <img src="../image/Otokatari-Icon.png">
+    <a class="back" href="MainPage.html" style="text-decoration: none; font-size:20px;">回到主页</a>
+    <hr>
     <h2 class="singernametitle"></h2>
 </div>
 <div class="li"></div>
@@ -88,6 +91,7 @@
 
     var singername=window.localStorage.getItem("QQmusicsingernamekey");
     function show() {
+        $('.title').text(singername);
         $('.singernametitle').html(singername);
         $.ajax({
             type: 'GET',

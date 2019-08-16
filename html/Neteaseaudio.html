@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>网易云播放</title>
+    <title class="title">网易云播放</title>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript"
@@ -45,9 +45,12 @@
 </head>
 
 <body>
+<div class="top">
+    <img src="../image/Otokatari-Icon.png">
+    <a class="back" href="MainPage.html" style="text-decoration: none; font-size:20px;">回到主页</a>
+</div>
+<hr>
 <input type="button" class="btn btn-primary" onclick="audioplay()" value="播放">
-<input type="button" class="btn btn-primary" onclick="postComment()" value="分享">
-<input type="button" class="btn btn-primary" onclick="getComment()" value="获取分享列表">
 <audio controls preload="auto" autoplay loop="loop">
     <source id="source">
 </audio>
@@ -77,6 +80,7 @@
     var userid = window.localStorage.getItem("IDkey");
 
     window.onload = function () {
+        $('.title').text(neteasesongnametitle+neteaseartistnametitle+neteasealbumnametitle);
         $.ajax({
             type: 'get',
             url: 'http://129.204.223.158/netease/lyric?id=' + test1,
@@ -86,7 +90,7 @@
                 console.log(lyric);
                 $('#songnametitle').html(neteasesongnametitle);
                 $('#artistnametitle').html(neteaseartistnametitle);
-                $('#albumnametitle').html('专辑: ' + neteasealbumnametitle);
+                $('#albumnametitle').html('专辑: ' + neteasealbumnametitle+'<br/>'+'<br/>');
                 $('#lrc_content').html(lyric);
             }
         })

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>我的音乐</title>
+    <title class="title">我的音乐</title>
     <style>
         .li{
             width:80%;
@@ -119,6 +119,7 @@
        {
            var listname=window.localStorage.getItem("listnametextkey");
            $(".listnametitle").html(listname);
+           $('.title').text('歌单 '+listname);
        }
 
        function showSongList()

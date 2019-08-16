@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title class="title">酷狗音乐搜索</title>
     <style>
     .li{
     width:90%;
@@ -60,6 +60,10 @@
     span{
     font-size:20px;
     }
+    h2{
+        margin:0 auto;
+        text-align: center;
+    }
     </style>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
@@ -68,8 +72,12 @@
 <body>
 
 <div class="top">
+    <img src="../image/Otokatari-Icon.png">
+    <a class="back" href="MainPage.html" style="text-decoration: none; font-size:20px;">回到主页</a>
+    <hr>
     <h2 class="singernametitle"></h2>
 </div>
+
 <div class="li">
 </div>
 <script>
@@ -81,6 +89,7 @@
     var singername=window.localStorage.getItem("kugousingernamekey");
     function show()
     {
+        $('.title').text(singername);
         $('.singernametitle').html(singername);
         $.ajax({
             type: 'get',

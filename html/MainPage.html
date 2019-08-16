@@ -122,10 +122,9 @@
         <ul>
             <li class="items"><a id="login" href="login.html" style="text-decoration: none;color:black;font-size:30px;">登录</a></li>
             <li class="items"><a href="MyMusic.html" style="text-decoration: none;color:black;font-size:30px;">我的音乐</a></li>
-            <li class="items"><h3 class="nickname" style="color:lightsalmon" onclick="logOut()"></h3></li>
+            <li class="items"><h3 class="nickname" style="color:lightsalmon" onclick="logOut()"></h3> </li>
         </ul>
-</div>
-
+    </div>
 </div>
 <hr/>
 
@@ -133,9 +132,9 @@
 </div>
 
 <script type="text/javascript">
-
     var value="Bearer "+window.localStorage.getItem("Tokenkey");
     var userid=window.localStorage.getItem("IDkey");
+    console.log(userid);
 
     window.onload=function()
     {
